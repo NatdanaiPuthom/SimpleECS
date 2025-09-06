@@ -108,7 +108,6 @@ workspace "SimpleEngine"
 
 		links {
 			"External", 
-			"Engine"
 		}
 
 		filter "system:windows"
