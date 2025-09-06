@@ -9,3 +9,9 @@
 
 [Ll]ocal
 [Tt]emp
+
+[Bb]in/[Dd]ebug
+[Bb]in/[Rr]elease
+[Bb]in/[Rr]etail
+
+[Dd]ependencies/
