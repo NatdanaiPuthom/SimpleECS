@@ -1,3 +1,9 @@
+local name = "SimpleProject"
+
+local projects = {
+	Launcher = "Launcher",
+	External = "External"
+}
 
 local directories = {}
 directories["Root"]					= os.realpath("\\")
@@ -6,11 +12,9 @@ directories["Local"]				= os.realpath("Local\\")
 directories["Source"]				= os.realpath("Source\\")
 directories["Temp"]					= os.realpath("Temp\\")
 directories["Dependencies"]			= os.realpath("Dependencies\\")
-
 directories["Lib"]					= directories.Dependencies .. "Lib\\"
-
-directories["Launcher"]				= directories.Source .. "Launcher\\"
-directories["External"]				= directories.Source .. "External\\"
+directories[projects.Launcher]				= directories.Source .. "Launcher\\"
+directories[projects.External]				= directories.Source .. "External\\"
 
 for key, path in pairs(directories) do
     if key ~= "Root" then 
@@ -18,8 +22,8 @@ for key, path in pairs(directories) do
     end
 end
 
-workspace "SimpleEngine"
-	startproject "Launcher" 
+workspace (name)
+	startproject (projects.Launcher)
 	architecture "x64"
 	language "C++"
 	cdialect "C17"
@@ -68,10 +72,10 @@ workspace "SimpleEngine"
 
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	project "External"
+	project (projects.External)
 		kind "StaticLib"
 		location (directories.Local) 
-		targetdir (directories["Lib"] .. "/%{cfg.buildcfg}")
+		targetdir (directories.Lib .. "/%{cfg.buildcfg}")
 		targetname("%{prj.name}_%{cfg.buildcfg}") 
 		fatalwarnings { "All" }
 
@@ -87,11 +91,11 @@ workspace "SimpleEngine"
   
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	project "Launcher"
+	project (projects.Launcher)
 		kind "ConsoleApp"
 		location (directories.Local)
-		targetdir (directories["Bin"] .. "/%{cfg.buildcfg}")
-		targetname "SimpleEngine_%{cfg.buildcfg}"
+		targetdir (directories.Bin .. "/%{cfg.buildcfg}")
+		targetname (name.."_%{cfg.buildcfg}")
 		fatalwarnings { "All" }
 	
 		files {
@@ -107,13 +111,10 @@ workspace "SimpleEngine"
 		}
 
 		links {
-			"External", 
+			projects.External
 		}
 
 		filter "system:windows"
 			systemversion "latest"
-
-			links {
-			}
 
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
