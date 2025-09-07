@@ -10,6 +10,6 @@ struct EmilTest
 
 int main()
 {
-	Simple::MemoryPool memoryPool(sizeof(EmilTest), alignof(EmilTest), typeid(EmilTest).hash_code(), typeid(EmilTest).name());
+	Simple::MemoryPool memoryPool(sizeof(EmilTest), alignof(EmilTest), typeid(EmilTest).hash_code(), 1);
 	return 0;
 }
