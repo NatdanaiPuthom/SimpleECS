@@ -1,4 +1,4 @@
-#include "External/SimpleUtilities/MemoryTracking/MemoryTracker.h"
+#include "External/SimpleUtilities/MemoryTracking/MemoryTracker.hpp"
 
 int main()
 {

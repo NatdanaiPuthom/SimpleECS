@@ -1,4 +1,4 @@
-#include "SimpleUtilities/MemoryTracking/MemoryTracker.h"
+#include "MemoryTracker.hpp"
 
 #include <fstream>
 #include <iostream>
