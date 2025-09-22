@@ -48,7 +48,7 @@ namespace Simple
 		std::cout << "Current Address: " << static_cast<void*>(myCurrentMemoryAddress) << std::endl;
 		std::cout << "Memory Capacity: " << GetCapacity() << std::endl;
 		std::cout << "Occupied Memory Space: " << GetOccupiedMemorySpace() << std::endl;
-		std::cout << "Avaliable MemorySpace: " << GetAvailableMemorySpace() << std::endl;
+		std::cout << "Avaliable Memory Space: " << GetAvailableMemorySpace() << std::endl;
 		std::cout << "----------" << std::endl;
 	}
 
