@@ -29,7 +29,7 @@ workspace (name)
 	cdialect "C17"
 	cppdialect "C++20"
 	warnings "Extra"
-	toolset "msc-v143"
+	toolset "msc-v145"
 	objdir (directories["Temp"] .. "/%{cfg.buildcfg}/%{prj.name}")
 	libdirs (directories["Lib"] .. "/%{cfg.buildcfg}")
 
