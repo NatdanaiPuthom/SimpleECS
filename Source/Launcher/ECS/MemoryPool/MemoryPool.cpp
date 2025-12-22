@@ -5,14 +5,20 @@
 
 namespace Simple
 {
-	MemoryPool::MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aTypeHashCode, const size_t aReserveAmount)
-		: myCurrentMemoryAddress(nullptr)
-		, myStartMemoryAddress(nullptr)
-		, myEndMemoryAddress(nullptr)
-		, myTypeHashCode(aTypeHashCode)
-		, myTypeAlignment(aTypeAlignment)
+	MemoryPool::MemoryPool()
 	{
+		Init(0, 0);
+		static unsigned int count = 0;
+		std::cout << "Initialized Empty MemoryPool: " << ++count << std::endl;
+	}
+
+	MemoryPool::MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aTypeHashCode, const size_t aReserveAmount)
+	{
+		Init(aTypeAlignment, aTypeHashCode);
 		Allocate(aTypeSize * aReserveAmount);
+
+		static unsigned int count = 0;
+		std::cout << "Initialized  MemoryPool: " << ++count << std::endl;
 	}
 
 	MemoryPool::~MemoryPool()
@@ -22,6 +28,49 @@ namespace Simple
 		myStartMemoryAddress = nullptr;
 		myEndMemoryAddress = nullptr;
 		myCurrentMemoryAddress = nullptr;
+	}
+
+	void MemoryPool::Init(const size_t aTypeAlignment, const size_t aTypeHashCode)
+	{
+		myCurrentMemoryAddress = nullptr;
+		myStartMemoryAddress = nullptr;
+		myEndMemoryAddress = nullptr;
+		myTypeHashCode = aTypeHashCode;
+		myTypeAlignment = aTypeAlignment;
+	}
+
+	MemoryPool::MemoryPool(MemoryPool&& aOther) noexcept
+		: myCurrentMemoryAddress(aOther.myCurrentMemoryAddress)
+		, myStartMemoryAddress(aOther.myStartMemoryAddress)
+		, myEndMemoryAddress(aOther.myEndMemoryAddress)
+		, myTypeHashCode(aOther.myTypeHashCode)
+		, myTypeAlignment(aOther.myTypeAlignment)
+	{
+		aOther.myCurrentMemoryAddress = nullptr;
+		aOther.myStartMemoryAddress = nullptr;
+		aOther.myEndMemoryAddress = nullptr;
+		aOther.myTypeHashCode = 0;
+		aOther.myTypeAlignment = 0;
+	}
+
+	MemoryPool& MemoryPool::operator=(MemoryPool&& aOther) noexcept
+	{
+		if (this != &aOther)
+		{
+			myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
+			myStartMemoryAddress = aOther.myStartMemoryAddress;
+			myEndMemoryAddress = aOther.myEndMemoryAddress;
+			myTypeHashCode = aOther.myTypeHashCode;
+			myTypeAlignment = aOther.myTypeAlignment;
+
+			aOther.myCurrentMemoryAddress = nullptr;
+			aOther.myStartMemoryAddress = nullptr;
+			aOther.myEndMemoryAddress = nullptr;
+			aOther.myTypeHashCode = 0;
+			aOther.myTypeAlignment = 0;
+		}
+
+		return *this;
 	}
 
 	size_t MemoryPool::GetAvailableMemorySpace() const
