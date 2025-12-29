@@ -20,23 +20,5 @@ int main()
 		emilPool.PrintMemoryStatus();
 	}
 
-
-	//[[maybe_unused]] MemoryPool memoryPool(sizeof(EmilTest), alignof(EmilTest), typeid(EmilTest).hash_code(), 1);
-	//memoryPool.PrintMemoryStatus();
-
-	//[[maybe_unused]] bool success1 = ECSRegistry::GetInstance()->Register<EmilTest>();
-
-	//EntityManager entityManager;
-
-	//Entity& entity1 = entityManager.CreateEntity();
-	//entity1;
-
-	//Entity& entityCopy = entityManager.GetEntity(0);
-	//entityCopy;
-
-	////entityManager.AddComponent<EmilTest>()
-
-	//ECSRegistry::GetInstance()->Destroy();
-
 	return 0;
 }
