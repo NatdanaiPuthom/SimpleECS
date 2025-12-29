@@ -1,56 +1,64 @@
 #include "MemoryPool.hpp"
-#include <cstring>
 #include <new>
+#include <cstring>
 #include <iostream>
 
 namespace Simple
 {
-	MemoryPool::MemoryPool()
+	MemoryPool::MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aReserveAmount)
+		: myCurrentMemoryAddress(nullptr)
+		, myStartMemoryAddress(nullptr)
+		, myEndMemoryAddress(nullptr)
+		, myCreateObjectFunction(nullptr)
+		, myMoveObjectFunction(nullptr)
+		, myDestroyObjectFunction(nullptr)
+		, myAlignment(aTypeAlignment)
+		, myCount(0)
+		, mySize(aTypeSize)
 	{
-		Init(0, 0);
-		static unsigned int count = 0;
-		std::cout << "Initialized Empty MemoryPool: " << ++count << std::endl;
-	}
-
-	MemoryPool::MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aTypeHashCode, const size_t aReserveAmount)
-	{
-		Init(aTypeAlignment, aTypeHashCode);
 		Allocate(aTypeSize * aReserveAmount);
-
-		static unsigned int count = 0;
-		std::cout << "Initialized  MemoryPool: " << ++count << std::endl;
 	}
 
 	MemoryPool::~MemoryPool()
 	{
-		::operator delete[](myStartMemoryAddress, std::align_val_t(myTypeAlignment));
+		for (size_t i = 0; i < myCount; i++)
+		{
+			myDestroyObjectFunction(myStartMemoryAddress + mySize * i);
+		}
+
+		::operator delete(myStartMemoryAddress, std::align_val_t(myAlignment));
 
 		myStartMemoryAddress = nullptr;
 		myEndMemoryAddress = nullptr;
 		myCurrentMemoryAddress = nullptr;
-	}
-
-	void MemoryPool::Init(const size_t aTypeAlignment, const size_t aTypeHashCode)
-	{
-		myCurrentMemoryAddress = nullptr;
-		myStartMemoryAddress = nullptr;
-		myEndMemoryAddress = nullptr;
-		myTypeHashCode = aTypeHashCode;
-		myTypeAlignment = aTypeAlignment;
+		myCreateObjectFunction = nullptr;
+		myMoveObjectFunction = nullptr;
+		myDestroyObjectFunction = nullptr;
+		myAlignment = 0;
+		myCount = 0;
+		mySize = 0;
 	}
 
 	MemoryPool::MemoryPool(MemoryPool&& aOther) noexcept
 		: myCurrentMemoryAddress(aOther.myCurrentMemoryAddress)
 		, myStartMemoryAddress(aOther.myStartMemoryAddress)
 		, myEndMemoryAddress(aOther.myEndMemoryAddress)
-		, myTypeHashCode(aOther.myTypeHashCode)
-		, myTypeAlignment(aOther.myTypeAlignment)
+		, myCreateObjectFunction(aOther.myCreateObjectFunction)
+		, myMoveObjectFunction(aOther.myMoveObjectFunction)
+		, myDestroyObjectFunction(aOther.myDestroyObjectFunction)
+		, myAlignment(aOther.myAlignment)
+		, myCount(aOther.myCount)
+		, mySize(aOther.mySize)
 	{
 		aOther.myCurrentMemoryAddress = nullptr;
 		aOther.myStartMemoryAddress = nullptr;
 		aOther.myEndMemoryAddress = nullptr;
-		aOther.myTypeHashCode = 0;
-		aOther.myTypeAlignment = 0;
+		aOther.myCreateObjectFunction = nullptr;
+		aOther.myMoveObjectFunction = nullptr;
+		aOther.myDestroyObjectFunction = nullptr;
+		aOther.myAlignment = 0;
+		aOther.myCount = 0;
+		aOther.mySize = 0;
 	}
 
 	MemoryPool& MemoryPool::operator=(MemoryPool&& aOther) noexcept
@@ -60,14 +68,22 @@ namespace Simple
 			myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
 			myStartMemoryAddress = aOther.myStartMemoryAddress;
 			myEndMemoryAddress = aOther.myEndMemoryAddress;
-			myTypeHashCode = aOther.myTypeHashCode;
-			myTypeAlignment = aOther.myTypeAlignment;
+			myCreateObjectFunction = aOther.myCreateObjectFunction;
+			myMoveObjectFunction = aOther.myMoveObjectFunction;
+			myDestroyObjectFunction = aOther.myDestroyObjectFunction;
+			myAlignment = aOther.myAlignment;
+			myCount = aOther.myCount;
+			mySize = aOther.mySize;
 
 			aOther.myCurrentMemoryAddress = nullptr;
 			aOther.myStartMemoryAddress = nullptr;
 			aOther.myEndMemoryAddress = nullptr;
-			aOther.myTypeHashCode = 0;
-			aOther.myTypeAlignment = 0;
+			aOther.myCreateObjectFunction = nullptr;
+			aOther.myMoveObjectFunction = nullptr;
+			aOther.myDestroyObjectFunction = nullptr;
+			aOther.myAlignment = 0;
+			aOther.myCount = 0;
+			aOther.mySize = 0;
 		}
 
 		return *this;
@@ -90,7 +106,7 @@ namespace Simple
 
 	void MemoryPool::PrintMemoryStatus() const
 	{
-		std::cout << "----------" << std::endl;
+		std::cout << "--------------------" << std::endl;
 		std::cout << "Memory Status:" << std::endl;
 		std::cout << "Start Address: " << static_cast<void*>(myStartMemoryAddress) << std::endl;
 		std::cout << "End Address: " << static_cast<void*>(myEndMemoryAddress) << std::endl;
@@ -98,32 +114,57 @@ namespace Simple
 		std::cout << "Memory Capacity: " << GetCapacity() << std::endl;
 		std::cout << "Occupied Memory Space: " << GetOccupiedMemorySpace() << std::endl;
 		std::cout << "Avaliable Memory Space: " << GetAvailableMemorySpace() << std::endl;
-		std::cout << "----------" << std::endl;
+		std::cout << "Component Count: " << myCount << std::endl;
+		std::cout << "--------------------" << std::endl;
 	}
 
 	void MemoryPool::Allocate(const size_t aSize)
 	{
-		myStartMemoryAddress = static_cast<std::byte*>(::operator new[](aSize, std::align_val_t(myTypeAlignment)));
-		myEndMemoryAddress = myStartMemoryAddress + (aSize);
+		myStartMemoryAddress = static_cast<Byte*>(::operator new(aSize, std::align_val_t(myAlignment)));
+		myEndMemoryAddress = myStartMemoryAddress + aSize;
 		myCurrentMemoryAddress = myStartMemoryAddress;
 
 		std::memset(myStartMemoryAddress, 0xFF, aSize);
 	}
 
-	void MemoryPool::Reallocate()
+	void MemoryPool::Reallocate(const size_t aRequiredAdditionalBytes)
 	{
-		std::byte* const oldStartMemoryAddress = myStartMemoryAddress;
+		Byte* const oldStartMemoryAddress = myStartMemoryAddress;
 
 		const size_t occupiedMemorySpace = GetOccupiedMemorySpace();
 		const size_t oldMemoryCapacity = GetCapacity();
-		const size_t newMemoryCapacity = oldMemoryCapacity * 2;
+
+		size_t newMemoryCapacity = oldMemoryCapacity > 0 ? oldMemoryCapacity * 2 : aRequiredAdditionalBytes;
+
+		while (newMemoryCapacity < (occupiedMemorySpace + aRequiredAdditionalBytes))
+		{
+			newMemoryCapacity *= 2;
+		}
 
 		Allocate(newMemoryCapacity);
 
-		std::memcpy(myStartMemoryAddress, oldStartMemoryAddress, occupiedMemorySpace);
-		::operator delete[](oldStartMemoryAddress, std::align_val_t(myTypeAlignment));
+		for (size_t i = 0; i < myCount; i++)
+		{
+			Byte* oldComponentAddress = oldStartMemoryAddress + mySize * i;
+			Byte* newComponentAddress = myStartMemoryAddress + mySize * i;
+
+			myMoveObjectFunction(newComponentAddress, oldComponentAddress);
+		}
+
+		::operator delete(oldStartMemoryAddress, std::align_val_t(myAlignment));
 
 		myCurrentMemoryAddress = myStartMemoryAddress + occupiedMemorySpace;
 		myEndMemoryAddress = myStartMemoryAddress + newMemoryCapacity;
+	}
+
+	size_t MemoryPool::CreateObject()
+	{
+		if (mySize > GetAvailableMemorySpace())
+		{
+			Reallocate(mySize);
+		}
+
+		myCurrentMemoryAddress += myCreateObjectFunction(myCurrentMemoryAddress);
+		return myCount++;
 	}
 }

@@ -8,23 +8,35 @@ using namespace Simple;
 
 int main()
 {
-	MemoryPool memoryPool(sizeof(EmilTest), alignof(EmilTest), typeid(EmilTest).hash_code(), 1);
-	memoryPool.PrintMemoryStatus();
+	{
+		[[maybe_unused]] MemoryPool emilPool = MemoryPool::CreatePool<EmilTest>();
+		emilPool.PrintMemoryStatus();
+		[[maybe_unused]] size_t id1 = emilPool.CreateObject();
+		[[maybe_unused]] EmilTest* emilComponent1 = emilPool.GetObjectAtIndex<EmilTest>(id1);
+		emilComponent1->value1 = 99;
+		emilComponent1->value2 = 100;
+		[[maybe_unused]] size_t id2 = emilPool.CreateObject();
+		[[maybe_unused]] size_t id3 = emilPool.CreateObject();
+		emilPool.PrintMemoryStatus();
+	}
 
-	bool success1 = ECSRegistry::GetInstance()->Register<EmilTest>();
-	success1;
 
-	EntityManager entityManager;
+	//[[maybe_unused]] MemoryPool memoryPool(sizeof(EmilTest), alignof(EmilTest), typeid(EmilTest).hash_code(), 1);
+	//memoryPool.PrintMemoryStatus();
 
-	Entity& entity1 = entityManager.CreateEntity();
-	entity1;
+	//[[maybe_unused]] bool success1 = ECSRegistry::GetInstance()->Register<EmilTest>();
 
-	Entity& entityCopy = entityManager.GetEntity(0);
-	entityCopy;
+	//EntityManager entityManager;
 
-	//entityManager.AddComponent<EmilTest>()
+	//Entity& entity1 = entityManager.CreateEntity();
+	//entity1;
 
-	ECSRegistry::GetInstance()->Destroy();
+	//Entity& entityCopy = entityManager.GetEntity(0);
+	//entityCopy;
+
+	////entityManager.AddComponent<EmilTest>()
+
+	//ECSRegistry::GetInstance()->Destroy();
 
 	return 0;
 }

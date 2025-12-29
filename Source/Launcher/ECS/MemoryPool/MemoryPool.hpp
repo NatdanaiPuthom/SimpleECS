@@ -1,56 +1,89 @@
 #pragma once
 #include "ECS/Component.hpp"
-#include <cstddef>
-#include <type_traits>
 
 namespace Simple
 {
 	class MemoryPool final
 	{
+	private:
+		using CreateComponentFunction = size_t(*)(void* aAddress);
+		using MoveComponentFunction = void(*)(void* aDestination, void* aSource);
+		using DestroyComponentFunction = void(*)(void* Component);
+
+		enum class Byte : unsigned char {};
 	public:
-		MemoryPool();
-		MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aTypeHashCode, const size_t aReserveAmount = 8);
+		template<IsComponent T>
+		static MemoryPool CreatePool();
+
 		~MemoryPool();
 
-		MemoryPool(const MemoryPool& ) = delete;
-		MemoryPool& operator=(const MemoryPool& ) = delete;
+		MemoryPool(const MemoryPool&) = delete;
+		MemoryPool& operator=(const MemoryPool&) = delete;
 
 		MemoryPool(MemoryPool&& aOther) noexcept;
 		MemoryPool& operator=(MemoryPool&& aOther) noexcept;
-	public:
-		template<typename T> requires std::is_base_of_v<Component, T>
-		T* CreateComponent(const T& aValue = T());
-	public:
+
+		size_t CreateObject();
+
+		template<IsComponent T>
+		T* GetObjectAtIndex(const size_t aIndex);
+
 		size_t GetAvailableMemorySpace() const;
 		size_t GetOccupiedMemorySpace() const;
 		size_t GetCapacity() const;
-	public:
+
 		void PrintMemoryStatus() const;
 	private:
-		void Init(const size_t aTypeAlignment, const size_t aTypeHashCode);
-		void Allocate(const size_t aSize);
-		void Reallocate();
-	private:
-		std::byte* myCurrentMemoryAddress;
-		std::byte* myStartMemoryAddress;
-		std::byte* myEndMemoryAddress;
+		MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aReserveAmount = 1);
 
-		size_t myTypeHashCode;
-		size_t myTypeAlignment;
+		void Allocate(const size_t aSize);
+		void Reallocate(const size_t aRequiredAdditionalBytes);
+	private:
+		Byte* myCurrentMemoryAddress;
+		Byte* myStartMemoryAddress;
+		Byte* myEndMemoryAddress;
+
+		CreateComponentFunction myCreateObjectFunction;
+		MoveComponentFunction myMoveObjectFunction;
+		DestroyComponentFunction myDestroyObjectFunction;
+
+		size_t myAlignment;
+		size_t mySize;
+		size_t myCount;
 	};
 
-	template<typename T> requires std::is_base_of_v<Component, T>
-	inline T* MemoryPool::CreateComponent(const T& aValue)
+	template<IsComponent T>
+	inline MemoryPool MemoryPool::CreatePool()
 	{
-		while (sizeof(T) > GetAvailableMemorySpace())
-		{
-			Reallocate();
-		}
+		MemoryPool pool(sizeof(T), alignof(T));
 
-		const size_t index = (myCurrentMemoryAddress - myStartMemoryAddress) / sizeof(T);
-		const T* component = new(myCurrentMemoryAddress)T(aValue);
-		myCurrentMemoryAddress += sizeof(T);
+		pool.myCreateObjectFunction = [](void* aAddress) -> size_t
+			{
+				[[maybe_unused]] T* component = new(aAddress)T();
+				return sizeof(T);
+			};
 
-		return component;
+		pool.myMoveObjectFunction = [](void* aDestination, void* aSource) -> void
+			{
+				T* destination = static_cast<T*>(aDestination);
+				T* source = static_cast<T*>(aSource);
+
+				new(destination)T(std::move(*source));
+
+				source->~T();
+			};
+
+		pool.myDestroyObjectFunction = [](void* aComponent) -> void
+			{
+				static_cast<T*>(aComponent)->~T();
+			};
+
+		return pool;
+	}
+
+	template<IsComponent T>
+	inline T* MemoryPool::GetObjectAtIndex(const size_t aIndex)
+	{
+		return reinterpret_cast<T*>(myStartMemoryAddress + mySize * aIndex);
 	}
 }

@@ -28,15 +28,6 @@ namespace Simple
 	public:
 		EntityManager()
 		{
-			const auto& registeredComponents = ECSRegistry::GetInstance()->GetRegisteredComponents();
-
-			myComponents.resize(registeredComponents.size());
-
-			for (const auto& [key, component] : registeredComponents)
-			{
-				MemoryPool memoryPool(component.sizeOf, component.alignOf, key.value);
-				myComponents[component.poolIndex] = std::move(memoryPool);
-			}
 		}
 
 		~EntityManager()
