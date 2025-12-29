@@ -2,7 +2,8 @@ local name = "SimpleProject"
 
 local projects = {
 	Launcher = "Launcher",
-	External = "External"
+	External = "External",
+	UnitTest = "UnitTest"
 }
 
 local directories = {}
@@ -15,6 +16,7 @@ directories["Dependencies"]			= os.realpath("Dependencies\\")
 directories["Lib"]					= directories.Dependencies .. "Lib\\"
 directories[projects.Launcher]				= directories.Source .. "Launcher\\"
 directories[projects.External]				= directories.Source .. "External\\"
+directories[projects.UnitTest]				= directories.Source .. "UnitTest\\"
 
 for key, path in pairs(directories) do
     if key ~= "Root" then 
@@ -88,7 +90,29 @@ workspace (name)
 			directories.External .. "/**.hpp",
 			directories.External .. "/**.cpp"
 		} 
-  
+
+  	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	project (projects.UnitTest)
+		kind "SharedLib"
+		location (directories.Local) 
+		targetdir (directories.Lib .. "/%{cfg.buildcfg}")
+		targetname("%{prj.name}_%{cfg.buildcfg}") 
+		fatalwarnings { "All" }
+		pchheader ("UnitTest/pch.h")
+		pchsource ("Source/UnitTest/pch.cpp")
+
+		includedirs {
+			directories.Source,
+			directories.UnitTest, 
+		} 
+
+		files {
+			directories.UnitTest .. "/**.h",
+			directories.UnitTest .. "/**.hpp",
+			directories.UnitTest .. "/**.cpp"
+		} 
+
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	project (projects.Launcher)
