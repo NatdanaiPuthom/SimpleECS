@@ -3,7 +3,8 @@ local name = "SimpleProject"
 local projects = {
 	Launcher = "Launcher",
 	External = "External",
-	UnitTest = "UnitTest"
+	UnitTest = "UnitTest",
+	Engine   = "Engine"
 }
 
 local directories = {}
@@ -17,6 +18,7 @@ directories["Lib"]					= directories.Dependencies .. "Lib\\"
 directories[projects.Launcher]				= directories.Source .. "Launcher\\"
 directories[projects.External]				= directories.Source .. "External\\"
 directories[projects.UnitTest]				= directories.Source .. "UnitTest\\"
+directories[projects.Engine]				= directories.Source .. "Engine\\"
 
 for key, path in pairs(directories) do
     if key ~= "Root" then 
@@ -82,6 +84,7 @@ workspace (name)
 		fatalwarnings { "All" }
 
 		includedirs {
+			directories.Source,
 			directories.External, 
 		} 
 
@@ -100,10 +103,13 @@ workspace (name)
 		targetname("%{prj.name}_%{cfg.buildcfg}") 
 		fatalwarnings { "All" }
 		pchheader ("UnitTest/pch.h")
-		pchsource ("Source/UnitTest/pch.cpp")
+		pchsource ("Source/UnitTest/pch.cpp") -- I don't know why I can't use directories.UnitTest .. pch.cpp
+		flags { "ExcludeFromBuild"}
 
 		includedirs {
 			directories.Source,
+			directories.External,
+			directories.Launcher,
 			directories.UnitTest, 
 		} 
 
@@ -112,6 +118,30 @@ workspace (name)
 			directories.UnitTest .. "/**.hpp",
 			directories.UnitTest .. "/**.cpp"
 		} 
+
+		links {
+			
+		}
+
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	project (projects.Engine)
+		kind "StaticLib"
+		location (directories.Local) 
+		targetdir (directories.Lib .. "/%{cfg.buildcfg}")
+		targetname("%{prj.name}_%{cfg.buildcfg}") 
+		fatalwarnings { "All" }
+
+		includedirs {
+			directories.Engine, 
+		} 
+
+		files {
+			directories.Engine .. "/**.h",
+			directories.Engine .. "/**.hpp",
+			directories.Engine .. "/**.cpp"
+		} 
+
 
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -131,11 +161,13 @@ workspace (name)
 
 		includedirs { 
 			directories.Source,
-			directories.Launcher
+			directories.Launcher,
+			directories.Engine
 		}
 
 		links {
-			projects.External
+			projects.External,
+			projects.Engine
 		}
 
 		filter "system:windows"

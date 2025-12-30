@@ -8,9 +8,10 @@ namespace UnitTest
 	TEST_CLASS(UnitTest)
 	{
 	public:
-		
-		TEST_METHOD(TestMethod1)
+
+		TEST_METHOD(Construct)
 		{
+			Assert::AreEqual(1, 1);
 		}
 	};
 }
