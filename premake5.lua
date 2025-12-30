@@ -104,7 +104,7 @@ workspace (name)
 		fatalwarnings { "All" }
 		pchheader ("UnitTest/pch.h")
 		pchsource ("Source/UnitTest/pch.cpp") -- I don't know why I can't use directories.UnitTest .. pch.cpp
-		flags { "ExcludeFromBuild"}
+		--flags { "ExcludeFromBuild"}
 
 		includedirs {
 			directories.Source,
