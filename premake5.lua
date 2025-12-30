@@ -108,8 +108,7 @@ workspace (name)
 
 		includedirs {
 			directories.Source,
-			directories.External,
-			directories.Launcher,
+			directories.Engine,
 			directories.UnitTest, 
 		} 
 
@@ -120,7 +119,7 @@ workspace (name)
 		} 
 
 		links {
-			
+			projects.Engine
 		}
 
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -10,9 +10,9 @@ using namespace Simple;
 int main()
 {
 	[[maybe_unused]] MemoryPool emilPool = MemoryPool::CreatePool<EmilTest>();
+	emilPool.PrintMemoryStatus();
 
 	/*
-	emilPool.PrintMemoryStatus();
 	[[maybe_unused]] size_t id1 = emilPool.CreateObject();
 	[[maybe_unused]] EmilTest* emilComponent1 = emilPool.GetObjectAtIndex<EmilTest>(id1);
 	emilComponent1->value1 = 99;
