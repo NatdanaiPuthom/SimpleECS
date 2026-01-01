@@ -1,5 +1,6 @@
 #pragma once
 #include "ECS/Component/Component.hpp"
+#include "ECS/Component/ComponentTypeIdentity.hpp"
 
 namespace Simple
 {
@@ -39,6 +40,8 @@ namespace Simple
 		void Allocate(const size_t aSize);
 		void Reallocate(const size_t aRequiredAdditionalBytes);
 	private:
+		ComponentTypeIdentity myComponentTypeIdentity;
+
 		Byte* myCurrentMemoryAddress;
 		Byte* myStartMemoryAddress;
 		Byte* myEndMemoryAddress;
@@ -56,6 +59,7 @@ namespace Simple
 	inline MemoryPool MemoryPool::CreatePool()
 	{
 		MemoryPool pool(sizeof(T), alignof(T));
+		pool.myComponentTypeIdentity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
 
 		pool.myCreateObjectFunction = [](void* aAddress) -> size_t
 			{
@@ -84,6 +88,11 @@ namespace Simple
 	template<IsComponent T>
 	inline T* MemoryPool::GetObjectAtIndex(const size_t aIndex)
 	{
+		if (ComponentTypeIdentity::GetComponentTypeIdentity<T>() != myComponentTypeIdentity)
+		{
+			return nullptr;
+		}
+
 		return reinterpret_cast<T*>(myStartMemoryAddress + mySize * aIndex);
 	}
 }

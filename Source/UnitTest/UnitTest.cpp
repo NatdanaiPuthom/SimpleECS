@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 
 #include "Engine/ECS/MemoryPool/MemoryPool.hpp"
-#include "Engine/ECS/Component.hpp"
+#include "Engine/ECS/Component/Component.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Simple;
