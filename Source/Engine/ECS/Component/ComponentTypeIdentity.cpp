@@ -20,6 +20,31 @@ namespace Simple
 		myName = "Invalid";
 	}
 
+	size_t ComponentTypeIdentity::GetID() const
+	{
+		return myID;
+	}
+
+	const char* ComponentTypeIdentity::GetName() const
+	{
+		return myName;
+	}
+
+	bool ComponentTypeIdentity::IsValid() const
+	{
+		return (myID != 0);
+	}
+
+	bool ComponentTypeIdentity::operator==(const ComponentTypeIdentity& aOther) const
+	{
+		return this->myID == aOther.myID;
+	}
+
+	bool ComponentTypeIdentity::operator!=(const ComponentTypeIdentity& aOther) const
+	{
+		return this->myID != aOther.myID;
+	}
+
 	ComponentTypeIdentity::ComponentTypeIdentity(const ComponentTypeIdentity& aOther)
 		: myID(aOther.myID)
 		, myName(aOther.myName)

@@ -15,30 +15,13 @@ namespace Simple
 		template<IsComponent T> 
 		static ComponentTypeIdentity GetComponentTypeIdentity();
 
-		size_t GetID() const
-		{
-			return myID;
-		}
+		bool IsValid() const;
 
-		const char* GetName() const
-		{
-			return myName;
-		}
+		size_t GetID() const;
+		const char* GetName() const;
 
-		bool IsValid() const
-		{
-			return (myID != 0);
-		}
-
-		bool operator==(const ComponentTypeIdentity& aOther) const
-		{
-			return this->myID == aOther.myID;
-		}
-
-		bool operator!=(const ComponentTypeIdentity& aOther) const
-		{
-			return this->myID != aOther.myID;
-		}
+		bool operator==(const ComponentTypeIdentity& aOther) const;
+		bool operator!=(const ComponentTypeIdentity& aOther) const;
 
 		ComponentTypeIdentity(const ComponentTypeIdentity& aOther);
 		ComponentTypeIdentity& operator=(const ComponentTypeIdentity& aOther);
