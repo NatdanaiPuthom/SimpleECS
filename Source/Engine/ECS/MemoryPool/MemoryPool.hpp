@@ -1,5 +1,5 @@
 #pragma once
-#include "ECS/Component.hpp"
+#include "ECS/Component/Component.hpp"
 
 namespace Simple
 {

@@ -3,7 +3,7 @@
 //#include "External/ECS/EntityManager.hpp"
 
 #include "Engine/ECS/MemoryPool/MemoryPool.hpp"
-#include "Engine/ECS/Components.hpp"
+#include "Engine/ECS/Component/TestComponents.hpp"
 
 using namespace Simple;
 
