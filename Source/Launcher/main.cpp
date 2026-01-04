@@ -22,6 +22,7 @@ int main()
 	emilPool.PrintMemoryStatus();
 
 	size_t id = emilPool.CreateObject();
+	emilPool.PrintMemoryStatus();
 
 	HelloWorld* test = emilPool.GetObjectAtIndex<HelloWorld>(id);
 	test;
