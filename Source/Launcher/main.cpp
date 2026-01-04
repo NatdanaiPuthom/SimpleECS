@@ -4,22 +4,27 @@
 
 #include "Engine/ECS/MemoryPool/MemoryPool.hpp"
 #include "Engine/ECS/Component/TestComponents.hpp"
+#include "Engine/Debugger/Console/Console.hpp"
 
 using namespace Simple;
 
+struct HelloWorld : Component
+{
+	int value = 5;
+};
+
 int main()
 {
+	Console console;
+	console.Init();
+
 	[[maybe_unused]] MemoryPool emilPool = MemoryPool::CreatePool<EmilTest>();
 	emilPool.PrintMemoryStatus();
 
-	/*
-	[[maybe_unused]] size_t id1 = emilPool.CreateObject();
-	[[maybe_unused]] EmilTest* emilComponent1 = emilPool.GetObjectAtIndex<EmilTest>(id1);
-	emilComponent1->value1 = 99;
-	emilComponent1->value2 = 100;
-	[[maybe_unused]] size_t id2 = emilPool.CreateObject();
-	[[maybe_unused]] size_t id3 = emilPool.CreateObject();
-	emilPool.PrintMemoryStatus();*/
+	size_t id = emilPool.CreateObject();
+
+	HelloWorld* test = emilPool.GetObjectAtIndex<HelloWorld>(id);
+	test;
 
 	return 0;
 }

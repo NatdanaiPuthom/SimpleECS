@@ -1,6 +1,8 @@
 #pragma once
 #include "ECS/Component/Component.hpp"
 #include "ECS/Component/ComponentTypeIdentity.hpp"
+#include "Debugger/Assert.hpp"
+#include <string_view>
 
 namespace Simple
 {
@@ -90,6 +92,10 @@ namespace Simple
 	{
 		if (ComponentTypeIdentity::GetComponentTypeIdentity<T>() != myComponentTypeIdentity)
 		{
+			const std::string_view expected = myComponentTypeIdentity.GetName();
+			const std::string_view actual = typeid(T).name();
+
+			DebugAssert(false, "Component Type Mismatch", expected.data(), actual.data());
 			return nullptr;
 		}
 

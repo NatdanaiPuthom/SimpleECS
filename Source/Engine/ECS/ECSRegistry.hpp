@@ -1,5 +1,5 @@
 #pragma once
-#include "Component.hpp"
+#include "ECS/Component/Component.hpp"
 #include <string>
 #include <vector>
 #include <unordered_map>
