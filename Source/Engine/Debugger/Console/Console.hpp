@@ -27,6 +27,7 @@ namespace Simple
 		Console& operator=(Console&&) = delete;
 
 		static void Print(const char* aText, const bool aShouldEndLine = true);
+		static void Print(const char* aText, ConsoleTextColor aColor, const bool aShouldEndLine = true);
 		static void SetTextColor(const ConsoleTextColor aColor);
 	};
 }

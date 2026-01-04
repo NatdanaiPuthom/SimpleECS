@@ -23,29 +23,56 @@ namespace Simple
 
 	void Console::Init()
 	{
+		const char* message = nullptr;
+
+		if (GetConsoleWindow())
+		{
+			message = "Console already exists; using the existing console.";
+			SetTextColor(ConsoleTextColor::Yellow);
+		}
 #pragma warning(push)
 #pragma warning( disable : 4996 )
-		AllocConsole();
+		else if (AllocConsole())
+		{
+			message = "Console successfully initialized.";
+			SetTextColor(ConsoleTextColor::Green);
+		}
+		else
+		{
+			message = "Console initialization failed; using existing console if present.";
+			SetTextColor(ConsoleTextColor::Red);
+		}
+
 		freopen_s((FILE**)stdin, "CONIN$", "r", stdin);
 		freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 		freopen_s((FILE**)stdout, "CONOUT$", "w", stderr);
 
-		setbuf(stdin, NULL);
-		setbuf(stdout, NULL);
-		setbuf(stderr, NULL);
+		setbuf(stdin, nullptr);
+		setbuf(stdout, nullptr);
+		setbuf(stderr, nullptr);
+#pragma warning( pop )
 
 		SetConsoleTitle(L"Simple, it's just that easy");
-#pragma warning( pop )
+
+		Print(message);
+		SetTextColor(ConsoleTextColor::Default);
 	}
 
 	void Console::Print(const char* aText, const bool aShouldEndLine)
 	{
-		std::cout << aText;
+		std::cout << (aText ? aText : "(null)");
 
 		if (aShouldEndLine)
 		{
 			std::cout << std::endl;
 		}
+	}
+
+	void Console::Print(const char* aText, ConsoleTextColor aColor, const bool aShouldEndLine)
+	{
+		SetTextColor(aColor);
+		Print(aText, aShouldEndLine);
+		SetTextColor(ConsoleTextColor::Default);
 	}
 
 	void Console::SetTextColor(const ConsoleTextColor aColor)
