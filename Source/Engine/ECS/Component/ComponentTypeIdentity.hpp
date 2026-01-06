@@ -4,6 +4,23 @@
 
 namespace Simple
 {
+	template<IsComponent T>
+	struct ComponentIdentityID
+	{
+	private:
+		static size_t NextID()
+		{
+			static size_t counter = 1;
+			return counter++;
+		}
+	public:
+		static size_t GetID()
+		{
+			static const size_t id = NextID();
+			return id;
+		}
+	};
+
 	class ComponentTypeIdentity final
 	{
 	public:
@@ -12,7 +29,7 @@ namespace Simple
 
 		~ComponentTypeIdentity();
 
-		template<IsComponent T> 
+		template<IsComponent T>
 		static ComponentTypeIdentity GetComponentTypeIdentity();
 
 		bool IsValid() const;
@@ -30,8 +47,6 @@ namespace Simple
 		ComponentTypeIdentity& operator=(ComponentTypeIdentity&& aOther) noexcept;
 
 	private:
-		static const size_t GetNextComponentID();
-	private:
 		size_t myID;
 		const char* myName;
 	};
@@ -40,7 +55,7 @@ namespace Simple
 	inline ComponentTypeIdentity ComponentTypeIdentity::GetComponentTypeIdentity()
 	{
 		static const char* name = typeid(T).name();
-		static const size_t id = GetNextComponentID();
+		static const size_t id = ComponentIdentityID<T>::GetID();
 		static ComponentTypeIdentity componentIdentity(id, name);
 
 		return componentIdentity;

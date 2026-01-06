@@ -83,10 +83,4 @@ namespace Simple
 
 		return *this;
 	}
-
-	const size_t ComponentTypeIdentity::GetNextComponentID()
-	{
-		static size_t nextID = 1;
-		return nextID++;
-	}
 }

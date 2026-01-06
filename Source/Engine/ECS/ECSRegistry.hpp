@@ -1,44 +1,15 @@
 #pragma once
 #include "ECS/Component/Component.hpp"
-#include <string>
-#include <vector>
+#include "ECS/Component/ComponentTypeIdentity.hpp"
 #include <unordered_map>
 #include <type_traits>
 #include <typeinfo>
 
 namespace Simple
 {
-	struct ComponentHashCode final
-	{
-		const size_t value;
-
-		template<typename T> requires std::is_base_of_v<Component, T>
-		static ComponentHashCode Create()
-		{
-			return ComponentHashCode(typeid(T).hash_code());
-		}
-
-		bool operator==(const ComponentHashCode& aOther) const noexcept
-		{
-			return this->value == aOther.value;
-		}
-
-	private:
-		explicit ComponentHashCode(const size_t aHashCode) : value(aHashCode) {}
-	};
-
-	struct TypeErasureComponentProperty final
-	{
-		std::string name;
-		size_t id;
-		size_t offset;
-	};
-
 	struct TypeErasureComponent final
 	{
-		std::string name;
-		std::vector<TypeErasureComponentProperty> properties;
-		size_t poolIndex;
+		ComponentTypeIdentity identity;
 		size_t sizeOf;
 		size_t alignOf;
 	};
@@ -48,66 +19,89 @@ namespace Simple
 	public:
 		static ECSRegistry* GetInstance();
 	public:
-		struct CustomHashComponentHashCode final
+		struct ECSComponentHashCode final
 		{
-			std::size_t operator()(const ComponentHashCode& aKey) const noexcept
+			const size_t value;
+
+			template<IsComponent T>
+			static ECSComponentHashCode CreateUniqueHashCode()
 			{
-				return std::hash<size_t>{}(aKey.value);
+				return ECSComponentHashCode(ComponentIdentityID<T>::GetID());
+			}
+
+			bool operator==(const ECSComponentHashCode& aOther) const noexcept
+			{
+				return this->value == aOther.value;
+			}
+
+		private:
+			explicit ECSComponentHashCode(const size_t aHashCode) : value(aHashCode) {}
+		};
+
+		struct RegisteredComponentsIdentityHash final
+		{
+			std::size_t operator()(const ECSComponentHashCode& aKey) const noexcept
+			{
+				return aKey.value;
 			}
 		};
 	public:
-		template<typename T> requires std::is_base_of_v<Component, T>
+		void Destroy();
+
+		//std::unordered_map<
+
+		template<IsComponent T>
 		bool Register();
 
-		template<typename T> requires std::is_base_of_v<Component, T>
-		size_t GetComponentPoolIndex()
-		{
-			const ComponentHashCode hashCode = ComponentHashCode::Create<T>();
+		template<IsComponent T>
+		const TypeErasureComponent& GetTypeErasureComponent() const;
 
-			if (myRegisteredComponents.contains(hashCode))
-			{
-				return myRegisteredComponents.at(hashCode).poolIndex;
-			}
-
-			return 0;
-		}
-
-		size_t GetRegisteredComponentsCount() const
-		{
-			return myRegisteredComponents.size();
-		}
-
-		const std::unordered_map<ComponentHashCode, TypeErasureComponent, CustomHashComponentHashCode>& GetRegisteredComponents() const
-		{
-			return myRegisteredComponents;
-		}
-
-		void Destroy();
 	private:
 		inline static ECSRegistry* myPtr = nullptr;
-		inline static size_t myNextComponentIndex = 0;
-		std::unordered_map<ComponentHashCode, TypeErasureComponent, CustomHashComponentHashCode> myRegisteredComponents;
+		inline static std::unordered_map<ECSComponentHashCode, TypeErasureComponent, RegisteredComponentsIdentityHash> myRegisteredComponents;
 	};
 
-	template<typename T> requires std::is_base_of_v<Component, T>
+	template<IsComponent T>
 	inline bool ECSRegistry::Register()
 	{
-		const ComponentHashCode hashCode = ComponentHashCode::Create<T>();
-
-		if (myRegisteredComponents.contains(hashCode))
-		{
-			return false;
-		}
-
-
 		TypeErasureComponent component;
-		component.name = typeid(T).name();
-		component.poolIndex = myNextComponentIndex;
+		component.identity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
 		component.sizeOf = sizeof(T);
 		component.alignOf = alignof(T);
-		myNextComponentIndex++;
+
+		const ECSComponentHashCode hashCode = ECSComponentHashCode::CreateUniqueHashCode<T>();
 
 		const auto [it, success] = myRegisteredComponents.insert({ hashCode, component });
 		return success;
 	}
+
+	template<IsComponent T>
+	inline const TypeErasureComponent& ECSRegistry::GetTypeErasureComponent() const
+	{
+		const ECSComponentHashCode hashCode = ECSComponentHashCode::CreateUniqueHashCode<T>();
+
+		const auto& it = myRegisteredComponents.find(hashCode);
+
+		if (it != myRegisteredComponents.end())
+		{
+			return it->second;
+		}
+
+		static TypeErasureComponent dummy;
+		return dummy;
+	}
+
+	template<IsComponent T>
+	class ECSRegisterComponent final
+	{
+	public:
+		ECSRegisterComponent()
+		{
+			ECSRegistry::GetInstance()->Register<T>();
+		}
+	};
+
+#define REGISTER_COMPONENT(aComponent) inline ECSRegisterComponent<aComponent> Global_Reflection_ECS_Registered_Component_##aComponent;
+
 }
+

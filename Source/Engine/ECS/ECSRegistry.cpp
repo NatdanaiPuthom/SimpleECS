@@ -4,7 +4,7 @@ namespace Simple
 {
 	ECSRegistry* ECSRegistry::GetInstance()
 	{
-		if (!myPtr)
+		if (myPtr == nullptr)
 		{
 			myPtr = new ECSRegistry();
 		}

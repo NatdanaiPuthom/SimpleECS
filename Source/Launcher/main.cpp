@@ -21,11 +21,6 @@ int main()
 	[[maybe_unused]] MemoryPool emilPool = MemoryPool::CreatePool<EmilTest>();
 	emilPool.PrintMemoryStatus();
 
-	size_t id = emilPool.CreateObject();
-	emilPool.PrintMemoryStatus();
-
-	HelloWorld* test = emilPool.GetObjectAtIndex<HelloWorld>(id);
-	test;
 
 	return 0;
 }
