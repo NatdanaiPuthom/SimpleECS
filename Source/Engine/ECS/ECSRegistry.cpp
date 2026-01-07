@@ -2,6 +2,10 @@
 
 namespace Simple
 {
+	ECSRegistry::ECSRegistry()
+	{
+	}
+
 	ECSRegistry* ECSRegistry::GetInstance()
 	{
 		if (myPtr == nullptr)
@@ -16,5 +20,10 @@ namespace Simple
 	{
 		delete myPtr;
 		myPtr = nullptr;
+	}
+
+	const std::unordered_map<ECSComponentHashCode, TypeErasureComponent, RegisteredComponentsIdentityHash>& ECSRegistry::GetRegisteredComponents() const
+	{
+		return myRegisteredComponents;
 	}
 }

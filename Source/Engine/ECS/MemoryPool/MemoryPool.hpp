@@ -20,8 +20,8 @@ namespace Simple
 
 		~MemoryPool();
 
-		MemoryPool(const MemoryPool&) = delete;
-		MemoryPool& operator=(const MemoryPool&) = delete;
+		MemoryPool(const MemoryPool& aOther);
+		MemoryPool& operator=(const MemoryPool& aOther);
 
 		MemoryPool(MemoryPool&& aOther) noexcept;
 		MemoryPool& operator=(MemoryPool&& aOther) noexcept;

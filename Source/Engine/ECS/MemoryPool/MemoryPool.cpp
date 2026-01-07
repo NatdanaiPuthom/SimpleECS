@@ -39,6 +39,44 @@ namespace Simple
 		mySize = 0;
 	}
 
+	MemoryPool::MemoryPool(const MemoryPool& aOther)
+		: myCreateObjectFunction(aOther.myCreateObjectFunction)
+		, myMoveObjectFunction(aOther.myMoveObjectFunction)
+		, myDestroyObjectFunction(aOther.myDestroyObjectFunction)
+		, myCurrentMemoryAddress(nullptr)
+		, myStartMemoryAddress(nullptr)
+		, myEndMemoryAddress(nullptr)
+	{
+		this->myAlignment = aOther.myAlignment;
+		this->myCount = aOther.myCount;
+		this->mySize = aOther.mySize;
+
+		Allocate(mySize * 1);
+	}
+
+	MemoryPool& MemoryPool::operator=(const MemoryPool& aOther)
+	{
+		if (this != &aOther)
+		{
+
+			this->myCreateObjectFunction = aOther.myCreateObjectFunction;
+			this->myMoveObjectFunction = aOther.myMoveObjectFunction;
+			this->myDestroyObjectFunction = aOther.myDestroyObjectFunction;
+
+			this->myAlignment = aOther.myAlignment;
+			this->myCount = aOther.myCount;
+			this->mySize = aOther.mySize;
+
+			this->myCurrentMemoryAddress = nullptr;
+			this->myStartMemoryAddress = nullptr;
+			this->myEndMemoryAddress = nullptr;
+
+			Allocate(mySize * 1);
+		}
+
+		return *this;
+	}
+
 	MemoryPool::MemoryPool(MemoryPool&& aOther) noexcept
 		: myCurrentMemoryAddress(aOther.myCurrentMemoryAddress)
 		, myStartMemoryAddress(aOther.myStartMemoryAddress)
@@ -65,15 +103,15 @@ namespace Simple
 	{
 		if (this != &aOther)
 		{
-			myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
-			myStartMemoryAddress = aOther.myStartMemoryAddress;
-			myEndMemoryAddress = aOther.myEndMemoryAddress;
-			myCreateObjectFunction = aOther.myCreateObjectFunction;
-			myMoveObjectFunction = aOther.myMoveObjectFunction;
-			myDestroyObjectFunction = aOther.myDestroyObjectFunction;
-			myAlignment = aOther.myAlignment;
-			myCount = aOther.myCount;
-			mySize = aOther.mySize;
+			this->myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
+			this->myStartMemoryAddress = aOther.myStartMemoryAddress;
+			this->myEndMemoryAddress = aOther.myEndMemoryAddress;
+			this->myCreateObjectFunction = aOther.myCreateObjectFunction;
+			this->myMoveObjectFunction = aOther.myMoveObjectFunction;
+			this->myDestroyObjectFunction = aOther.myDestroyObjectFunction;
+			this->myAlignment = aOther.myAlignment;
+			this->myCount = aOther.myCount;
+			this->mySize = aOther.mySize;
 
 			aOther.myCurrentMemoryAddress = nullptr;
 			aOther.myStartMemoryAddress = nullptr;

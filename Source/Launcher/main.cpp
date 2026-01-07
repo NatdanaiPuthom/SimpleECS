@@ -19,6 +19,8 @@ int main()
 	[[maybe_unused]]TypeErasureComponent comp1 = ECSRegistry::GetInstance()->GetTypeErasureComponent<EmilTest>();
 	[[maybe_unused]]TypeErasureComponent comp2 = ECSRegistry::GetInstance()->GetTypeErasureComponent<HelloWorld>();
 	
+	[[maybe_unused]] const auto& it = ECSRegistry::GetInstance()->GetRegisteredComponents();
+
 	ECSRegistry::GetInstance()->Destroy();
 
 	return 0;
