@@ -9,9 +9,9 @@ namespace Simple
 {
 	struct TypeErasureComponent final
 	{
-		ComponentTypeIdentity identity;
-		size_t sizeOf;
-		size_t alignOf;
+		ComponentTypeIdentity identity = {0, "Invalid"};
+		size_t sizeOf = 0;
+		size_t alignOf = 0;
 	};
 
 	class ECSRegistry final
@@ -87,8 +87,8 @@ namespace Simple
 			return it->second;
 		}
 
-		static TypeErasureComponent dummy;
-		return dummy;
+		static const TypeErasureComponent invalid = {};
+		return invalid;
 	}
 
 	template<IsComponent T>

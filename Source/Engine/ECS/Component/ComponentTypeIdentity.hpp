@@ -4,19 +4,19 @@
 
 namespace Simple
 {
+	inline size_t ComponentIdentityIDGenerateNextID()
+	{
+		static size_t counter = 1;
+		return counter++;
+	}
+
 	template<IsComponent T>
 	struct ComponentIdentityID
 	{
-	private:
-		static size_t NextID()
-		{
-			static size_t counter = 1;
-			return counter++;
-		}
 	public:
 		static size_t GetID()
 		{
-			static const size_t id = NextID();
+			static const size_t id = ComponentIdentityIDGenerateNextID();
 			return id;
 		}
 	};

@@ -1,6 +1,4 @@
 #include "External/SimpleUtilities/MemoryTracking/MemoryTracker.hpp"
-//#include "External/ECS/ECSRegistry.hpp"
-//#include "External/ECS/EntityManager.hpp"
 
 #include "Engine/ECS/MemoryPool/MemoryPool.hpp"
 #include "Engine/ECS/Component/TestComponents.hpp"
@@ -10,7 +8,7 @@ using namespace Simple;
 
 struct HelloWorld : Component
 {
-	int value = 5;
+	int value = 0;
 };
 
 int main()
@@ -18,9 +16,10 @@ int main()
 	Console console;
 	console.Init();
 
-	[[maybe_unused]] MemoryPool emilPool = MemoryPool::CreatePool<EmilTest>();
-	emilPool.PrintMemoryStatus();
-
+	[[maybe_unused]]TypeErasureComponent comp1 = ECSRegistry::GetInstance()->GetTypeErasureComponent<EmilTest>();
+	[[maybe_unused]]TypeErasureComponent comp2 = ECSRegistry::GetInstance()->GetTypeErasureComponent<HelloWorld>();
+	
+	ECSRegistry::GetInstance()->Destroy();
 
 	return 0;
 }
