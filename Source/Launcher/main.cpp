@@ -6,20 +6,17 @@
 
 using namespace Simple;
 
-struct HelloWorld : Component
-{
-	int value = 0;
-};
-
 int main()
 {
 	Console console;
 	console.Init();
 
 	[[maybe_unused]]TypeErasureComponent comp1 = ECSRegistry::GetInstance()->GetTypeErasureComponent<EmilTest>();
-	[[maybe_unused]]TypeErasureComponent comp2 = ECSRegistry::GetInstance()->GetTypeErasureComponent<HelloWorld>();
 	
 	[[maybe_unused]] const auto& it = ECSRegistry::GetInstance()->GetRegisteredComponents();
+
+	MemoryPool pool = MemoryPool::CreatePool<EmilTest>();
+	pool.PrintMemoryStatus();
 
 	ECSRegistry::GetInstance()->Destroy();
 

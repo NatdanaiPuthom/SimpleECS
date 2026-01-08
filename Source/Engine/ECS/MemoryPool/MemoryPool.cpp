@@ -9,9 +9,6 @@ namespace Simple
 		: myCurrentMemoryAddress(nullptr)
 		, myStartMemoryAddress(nullptr)
 		, myEndMemoryAddress(nullptr)
-		, myCreateObjectFunction(nullptr)
-		, myMoveObjectFunction(nullptr)
-		, myDestroyObjectFunction(nullptr)
 		, myAlignment(aTypeAlignment)
 		, myCount(0)
 		, mySize(aTypeSize)
@@ -23,7 +20,7 @@ namespace Simple
 	{
 		for (size_t i = 0; i < myCount; i++)
 		{
-			myDestroyObjectFunction(myStartMemoryAddress + mySize * i);
+			myComponentTypeIdentity.InvokeDestroy(myStartMemoryAddress + mySize * i);
 		}
 
 		::operator delete(myStartMemoryAddress, std::align_val_t(myAlignment));
@@ -31,59 +28,15 @@ namespace Simple
 		myStartMemoryAddress = nullptr;
 		myEndMemoryAddress = nullptr;
 		myCurrentMemoryAddress = nullptr;
-		myCreateObjectFunction = nullptr;
-		myMoveObjectFunction = nullptr;
-		myDestroyObjectFunction = nullptr;
 		myAlignment = 0;
 		myCount = 0;
 		mySize = 0;
-	}
-
-	MemoryPool::MemoryPool(const MemoryPool& aOther)
-		: myCreateObjectFunction(aOther.myCreateObjectFunction)
-		, myMoveObjectFunction(aOther.myMoveObjectFunction)
-		, myDestroyObjectFunction(aOther.myDestroyObjectFunction)
-		, myCurrentMemoryAddress(nullptr)
-		, myStartMemoryAddress(nullptr)
-		, myEndMemoryAddress(nullptr)
-	{
-		this->myAlignment = aOther.myAlignment;
-		this->myCount = aOther.myCount;
-		this->mySize = aOther.mySize;
-
-		Allocate(mySize * 1);
-	}
-
-	MemoryPool& MemoryPool::operator=(const MemoryPool& aOther)
-	{
-		if (this != &aOther)
-		{
-
-			this->myCreateObjectFunction = aOther.myCreateObjectFunction;
-			this->myMoveObjectFunction = aOther.myMoveObjectFunction;
-			this->myDestroyObjectFunction = aOther.myDestroyObjectFunction;
-
-			this->myAlignment = aOther.myAlignment;
-			this->myCount = aOther.myCount;
-			this->mySize = aOther.mySize;
-
-			this->myCurrentMemoryAddress = nullptr;
-			this->myStartMemoryAddress = nullptr;
-			this->myEndMemoryAddress = nullptr;
-
-			Allocate(mySize * 1);
-		}
-
-		return *this;
 	}
 
 	MemoryPool::MemoryPool(MemoryPool&& aOther) noexcept
 		: myCurrentMemoryAddress(aOther.myCurrentMemoryAddress)
 		, myStartMemoryAddress(aOther.myStartMemoryAddress)
 		, myEndMemoryAddress(aOther.myEndMemoryAddress)
-		, myCreateObjectFunction(aOther.myCreateObjectFunction)
-		, myMoveObjectFunction(aOther.myMoveObjectFunction)
-		, myDestroyObjectFunction(aOther.myDestroyObjectFunction)
 		, myAlignment(aOther.myAlignment)
 		, myCount(aOther.myCount)
 		, mySize(aOther.mySize)
@@ -91,9 +44,6 @@ namespace Simple
 		aOther.myCurrentMemoryAddress = nullptr;
 		aOther.myStartMemoryAddress = nullptr;
 		aOther.myEndMemoryAddress = nullptr;
-		aOther.myCreateObjectFunction = nullptr;
-		aOther.myMoveObjectFunction = nullptr;
-		aOther.myDestroyObjectFunction = nullptr;
 		aOther.myAlignment = 0;
 		aOther.myCount = 0;
 		aOther.mySize = 0;
@@ -106,9 +56,6 @@ namespace Simple
 			this->myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
 			this->myStartMemoryAddress = aOther.myStartMemoryAddress;
 			this->myEndMemoryAddress = aOther.myEndMemoryAddress;
-			this->myCreateObjectFunction = aOther.myCreateObjectFunction;
-			this->myMoveObjectFunction = aOther.myMoveObjectFunction;
-			this->myDestroyObjectFunction = aOther.myDestroyObjectFunction;
 			this->myAlignment = aOther.myAlignment;
 			this->myCount = aOther.myCount;
 			this->mySize = aOther.mySize;
@@ -116,9 +63,6 @@ namespace Simple
 			aOther.myCurrentMemoryAddress = nullptr;
 			aOther.myStartMemoryAddress = nullptr;
 			aOther.myEndMemoryAddress = nullptr;
-			aOther.myCreateObjectFunction = nullptr;
-			aOther.myMoveObjectFunction = nullptr;
-			aOther.myDestroyObjectFunction = nullptr;
 			aOther.myAlignment = 0;
 			aOther.myCount = 0;
 			aOther.mySize = 0;
@@ -153,7 +97,16 @@ namespace Simple
 		std::cout << "Occupied Memory Space: " << GetOccupiedMemorySpace() << std::endl;
 		std::cout << "Avaliable Memory Space: " << GetAvailableMemorySpace() << std::endl;
 		std::cout << "Component Count: " << myCount << std::endl;
-		std::cout << "--------------------" << std::endl;
+		std::cout << std::endl;
+		std::cout << "Advanced: " << std::endl;
+		//std::cout << "Create Function Address: " << myComponentTypeIdentity.myCreateObjectFunction << std::endl;
+		//std::cout << "Move Function Address: " << myMoveObjectFunction << std::endl;
+		//std::cout << "Destroy Function Address: " << myDestroyObjectFunction << std::endl;
+		//std::cout << std::endl;
+		//std::cout << "Create Function Ptr Address: " << &myCreateObjectFunction << std::endl;
+		//std::cout << "Move Function Ptr Address: " << &myMoveObjectFunction << std::endl;
+		//std::cout << "Destroy Function Ptr Address: " << &myDestroyObjectFunction << std::endl;
+		//std::cout << "--------------------" << std::endl;
 	}
 
 	void MemoryPool::Allocate(const size_t aSize)
@@ -186,7 +139,7 @@ namespace Simple
 			Byte* oldComponentAddress = oldStartMemoryAddress + mySize * i;
 			Byte* newComponentAddress = myStartMemoryAddress + mySize * i;
 
-			myMoveObjectFunction(newComponentAddress, oldComponentAddress);
+			myComponentTypeIdentity.InvokeMove(newComponentAddress, oldComponentAddress);
 		}
 
 		::operator delete(oldStartMemoryAddress, std::align_val_t(myAlignment));
@@ -202,7 +155,7 @@ namespace Simple
 			Reallocate(mySize);
 		}
 
-		myCurrentMemoryAddress += myCreateObjectFunction(myCurrentMemoryAddress);
+		myCurrentMemoryAddress += myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress);
 		return myCount++;
 	}
 }

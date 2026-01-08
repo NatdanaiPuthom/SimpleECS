@@ -8,8 +8,7 @@ namespace Simple
 {
 	struct TypeErasureComponent final
 	{
-		MemoryPool memoryPoolForCopy;
-		ComponentTypeIdentity identity = { 0, "Invalid" };
+		ComponentTypeIdentity identity = { 0, "Invalid", nullptr, nullptr, nullptr };
 		size_t sizeOf = 0;
 		size_t alignOf = 0;
 	};
@@ -66,7 +65,6 @@ namespace Simple
 	inline bool ECSRegistry::Register()
 	{
 		TypeErasureComponent component;
-		component.memoryPoolForCopy = MemoryPool::CreatePool<T>();
 		component.identity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
 		component.sizeOf = sizeof(T);
 		component.alignOf = alignof(T);
@@ -95,8 +93,7 @@ namespace Simple
 		};
 
 		static const TypeErasureComponent invalid = {
-			MemoryPool::CreatePool<Dummy>(),
-			{0, "Invalid"},
+			{0, "Invalid", nullptr, nullptr, nullptr},
 			sizeof(Dummy),
 			alignof(Dummy)
 		};

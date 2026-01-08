@@ -9,19 +9,16 @@ namespace Simple
 	class MemoryPool final
 	{
 	private:
-		using CreateComponentFunction = size_t(*)(void* aAddress);
-		using MoveComponentFunction = void(*)(void* aDestination, void* aSource);
-		using DestroyComponentFunction = void(*)(void* Component);
-
 		enum class Byte : unsigned char {};
 	public:
+
 		template<IsComponent T>
 		static MemoryPool CreatePool();
 
 		~MemoryPool();
 
-		MemoryPool(const MemoryPool& aOther);
-		MemoryPool& operator=(const MemoryPool& aOther);
+		MemoryPool(const MemoryPool& aOther) = delete;
+		MemoryPool& operator=(const MemoryPool& aOther) = delete;
 
 		MemoryPool(MemoryPool&& aOther) noexcept;
 		MemoryPool& operator=(MemoryPool&& aOther) noexcept;
@@ -48,10 +45,6 @@ namespace Simple
 		Byte* myStartMemoryAddress;
 		Byte* myEndMemoryAddress;
 
-		CreateComponentFunction myCreateObjectFunction;
-		MoveComponentFunction myMoveObjectFunction;
-		DestroyComponentFunction myDestroyObjectFunction;
-
 		size_t myAlignment;
 		size_t mySize;
 		size_t myCount;
@@ -62,27 +55,6 @@ namespace Simple
 	{
 		MemoryPool pool(sizeof(T), alignof(T));
 		pool.myComponentTypeIdentity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
-
-		pool.myCreateObjectFunction = [](void* aAddress) -> size_t
-			{
-				[[maybe_unused]] T* component = new(aAddress)T();
-				return sizeof(T);
-			};
-
-		pool.myMoveObjectFunction = [](void* aDestination, void* aSource) -> void
-			{
-				T* destination = static_cast<T*>(aDestination);
-				T* source = static_cast<T*>(aSource);
-
-				new(destination)T(std::move(*source));
-
-				source->~T();
-			};
-
-		pool.myDestroyObjectFunction = [](void* aComponent) -> void
-			{
-				static_cast<T*>(aComponent)->~T();
-			};
 
 		return pool;
 	}

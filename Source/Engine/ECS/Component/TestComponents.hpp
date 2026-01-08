@@ -4,7 +4,7 @@
 
 namespace Simple
 {
-	struct EmilTest : Component
+	struct EmilTest : public Component
 	{
 		int value1 = 0;
 		int value2 = 1;
@@ -12,7 +12,7 @@ namespace Simple
 
 	REGISTER_COMPONENT(EmilTest);
 
-	struct EricoTest : Component
+	struct EricoTest : public Component
 	{
 		int value1 = 0;
 		bool value2 = false;
