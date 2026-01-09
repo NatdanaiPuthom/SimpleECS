@@ -1,4 +1,5 @@
 #include "MemoryPool.hpp"
+#include "Debugger/Assert.hpp"
 #include <new>
 #include <iostream>
 
@@ -116,16 +117,23 @@ namespace Simple
 		std::cout << "--------------------" << std::endl;
 	}
 
-	void MemoryPool::Allocate(const size_t aSize)
+	bool MemoryPool::Allocate(const size_t aSize)
 	{
+		if (myComponentTypeIdentity.IsValid() == false)
+		{
+			DebugAssert(false, "Trying to Allocate invalid component identity!");
+			return false;
+		}
+
 		myStartMemoryAddress = static_cast<Byte*>(::operator new(aSize, std::align_val_t(myComponentTypeIdentity.GetAlignment())));
 		myEndMemoryAddress = myStartMemoryAddress + aSize;
 		myCurrentMemoryAddress = myStartMemoryAddress;
 
 		std::memset(myStartMemoryAddress, 0xFF, aSize);
+		return true;
 	}
 
-	void MemoryPool::Reallocate(const size_t aRequiredAdditionalBytes)
+	bool MemoryPool::Reallocate(const size_t aRequiredAdditionalBytes)
 	{
 		Byte* const oldStartMemoryAddress = myStartMemoryAddress;
 
@@ -139,7 +147,10 @@ namespace Simple
 			newMemoryCapacity *= 2;
 		}
 
-		Allocate(newMemoryCapacity);
+		if (Allocate(newMemoryCapacity) == false)
+		{
+			return false;
+		}
 
 		for (size_t i = 0; i < myCount; i++)
 		{
@@ -153,6 +164,8 @@ namespace Simple
 
 		myCurrentMemoryAddress = myStartMemoryAddress + occupiedMemorySpace;
 		myEndMemoryAddress = myStartMemoryAddress + newMemoryCapacity;
+
+		return true;
 	}
 
 	void MemoryPool::CopyComponents(const MemoryPool& aSource)
@@ -171,7 +184,10 @@ namespace Simple
 	{
 		if (myComponentTypeIdentity.GetSize() > GetAvailableMemorySpace())
 		{
-			Reallocate(myComponentTypeIdentity.GetSize());
+			if (Reallocate(myComponentTypeIdentity.GetSize()) == false)
+			{
+				return 0;
+			}
 		}
 
 		const size_t success = myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress, aDefaultValue);

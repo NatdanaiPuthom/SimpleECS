@@ -14,24 +14,6 @@ int main()
 	Console console;
 	console.Initialize();
 
-	[[maybe_unused]]TypeErasureComponent emilTest = ECSRegistry::GetInstance()->GetTypeErasureComponent<EmilTest>();	
-	[[maybe_unused]] const auto& it = ECSRegistry::GetInstance()->GetRegisteredComponents();
-
-	EntityManager entityManager;
-	entityManager.AddComponent<EmilTest>();
-
-	EmilTest emilCopyStruct;
-	emilCopyStruct.value1 = 99;
-	emilCopyStruct.value2 = 199;
-
-	MemoryPool pool(emilTest.identity, 8);
-
-	size_t index1 = pool.CreateObject();
-	[[maybe_unused]] EmilTest* emilStruct1 = pool.GetObjectAtIndex<EmilTest>(index1);
-
-	size_t index2 = pool.CreateObject(&emilCopyStruct);
-	[[maybe_unused]] EmilTest* emilStruct2 = pool.GetObjectAtIndex<EmilTest>(index2);
-
 	ComponentManager componentManager;
 	componentManager.Initialize();
 

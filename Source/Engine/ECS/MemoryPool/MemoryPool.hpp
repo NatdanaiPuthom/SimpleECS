@@ -31,8 +31,8 @@ namespace Simple
 
 		void PrintMemoryStatus() const;
 	private:
-		void Allocate(const size_t aSize);
-		void Reallocate(const size_t aRequiredAdditionalBytes);
+		bool Allocate(const size_t aSize);
+		bool Reallocate(const size_t aRequiredAdditionalBytes);
 		void CopyComponents(const MemoryPool& aSource);
 	private:
 		ComponentTypeIdentity myComponentTypeIdentity;
