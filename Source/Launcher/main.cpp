@@ -5,13 +5,14 @@
 #include "Engine/Debugger/Console/Console.hpp"
 
 #include "Engine/ECS/EntityManager.hpp"
+#include "Engine/ECS/Managers/ComponentManager.hpp"
 
 using namespace Simple;
 
 int main()
 {
 	Console console;
-	console.Init();
+	console.Initialize();
 
 	[[maybe_unused]]TypeErasureComponent emilTest = ECSRegistry::GetInstance()->GetTypeErasureComponent<EmilTest>();	
 	[[maybe_unused]] const auto& it = ECSRegistry::GetInstance()->GetRegisteredComponents();
@@ -30,6 +31,9 @@ int main()
 
 	size_t index2 = pool.CreateObject(&emilCopyStruct);
 	[[maybe_unused]] EmilTest* emilStruct2 = pool.GetObjectAtIndex<EmilTest>(index2);
+
+	ComponentManager componentManager;
+	componentManager.Initialize();
 
 	ECSRegistry::GetInstance()->Destroy();
 

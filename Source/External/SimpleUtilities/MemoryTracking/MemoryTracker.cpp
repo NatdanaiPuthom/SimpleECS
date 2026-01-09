@@ -87,7 +87,7 @@ namespace Simple
 		return 1;
 	}
 
-	void SimpleMemoryTracker::Init()
+	void SimpleMemoryTracker::Initialize()
 	{
 		_CrtSetAllocHook(&SimpleMemoryTracker::AllocHook);
 	}

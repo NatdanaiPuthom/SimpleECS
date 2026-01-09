@@ -21,7 +21,7 @@ namespace Simple
 		FreeConsole();
 	}
 
-	void Console::Init()
+	void Console::Initialize()
 	{
 		const char* message = nullptr;
 

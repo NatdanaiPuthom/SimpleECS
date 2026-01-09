@@ -1,6 +1,5 @@
 #include "MemoryPool.hpp"
 #include <new>
-#include <cstring>
 #include <iostream>
 
 namespace Simple
@@ -38,15 +37,7 @@ namespace Simple
 		, myEndMemoryAddress(nullptr)
 	{
 		Allocate(myComponentTypeIdentity.GetSize() * myCount);
-
-		const size_t size = this->myComponentTypeIdentity.GetSize();
-
-		for (size_t i = 0; i < this->myCount; i++)
-		{
-			Byte* destination = this->myStartMemoryAddress + size * i;
-			Byte* source = aOther.myStartMemoryAddress + size * i;
-			this->myComponentTypeIdentity.InvokeCopy(destination, source);
-		}
+		CopyComponents(aOther);
 	}
 
 	MemoryPool& Simple::MemoryPool::operator=(const MemoryPool& aOther)
@@ -60,15 +51,7 @@ namespace Simple
 			this->myEndMemoryAddress = nullptr;
 
 			Allocate(myComponentTypeIdentity.GetSize() * myCount);
-
-			const size_t size = this->myComponentTypeIdentity.GetSize();
-
-			for (size_t i = 0; i < this->myCount; i++)
-			{
-				Byte* destination = this->myStartMemoryAddress + size * i;
-				const Byte* source = aOther.myStartMemoryAddress + size * i;
-				this->myComponentTypeIdentity.InvokeCopy(destination, source);
-			}
+			CopyComponents(aOther);
 		}
 
 		return *this;
@@ -172,6 +155,18 @@ namespace Simple
 		myEndMemoryAddress = myStartMemoryAddress + newMemoryCapacity;
 	}
 
+	void MemoryPool::CopyComponents(const MemoryPool& aSource)
+	{
+		const size_t size = this->myComponentTypeIdentity.GetSize();
+
+		for (size_t i = 0; i < this->myCount; i++)
+		{
+			Byte* destination = this->myStartMemoryAddress + size * i;
+			const Byte* source = aSource.myStartMemoryAddress + size * i;
+			this->myComponentTypeIdentity.InvokeCopy(destination, source);
+		}
+	}
+
 	size_t MemoryPool::CreateObject(const void* aDefaultValue)
 	{
 		if (myComponentTypeIdentity.GetSize() > GetAvailableMemorySpace())
@@ -179,7 +174,14 @@ namespace Simple
 			Reallocate(myComponentTypeIdentity.GetSize());
 		}
 
-		myCurrentMemoryAddress += myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress, aDefaultValue);
-		return myCount++;
+		const size_t success = myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress, aDefaultValue);
+
+		if (success > 0)
+		{
+			myCurrentMemoryAddress += success;
+			return myCount++;
+		}
+
+		return 0;
 	}
 }

@@ -18,7 +18,7 @@ namespace Simple
 		Console();
 		~Console();
 
-		void Init();
+		void Initialize();
 
 		Console(const Console&) = delete;
 		Console& operator=(const Console&) = delete;

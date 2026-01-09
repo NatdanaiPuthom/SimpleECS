@@ -33,6 +33,7 @@ namespace Simple
 	private:
 		void Allocate(const size_t aSize);
 		void Reallocate(const size_t aRequiredAdditionalBytes);
+		void CopyComponents(const MemoryPool& aSource);
 	private:
 		ComponentTypeIdentity myComponentTypeIdentity;
 

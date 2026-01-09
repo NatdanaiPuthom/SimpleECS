@@ -100,12 +100,18 @@ namespace Simple
 
 	bool ComponentTypeIdentity::operator==(const ComponentTypeIdentity& aOther) const
 	{
-		return this->myID == aOther.myID;
+		return 
+			this->myID == aOther.myID &&
+			this->mySize == aOther.mySize &&
+			this->myAlignment == aOther.myAlignment;
 	}
 
 	bool ComponentTypeIdentity::operator!=(const ComponentTypeIdentity& aOther) const
 	{
-		return this->myID != aOther.myID;
+		return
+			this->myID != aOther.myID ||
+			this->myAlignment != aOther.myAlignment ||
+			this->mySize != aOther.mySize;
 	}
 
 	ComponentTypeIdentity::ComponentTypeIdentity(const ComponentTypeIdentity& aOther) noexcept

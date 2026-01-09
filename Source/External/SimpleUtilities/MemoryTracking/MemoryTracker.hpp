@@ -25,7 +25,7 @@ namespace Simple
 	{
 		friend class Simple::SimpleMemoryTrackerWrapper;
 	private:
-		static void Init();
+		static void Initialize();
 		static void Destory();
 
 		static int AllocHook(int aAllocType, void* aUserData, size_t aSize, int aBlockType, long aRequestNumber, const unsigned char*, int);
@@ -45,7 +45,7 @@ namespace Simple
 	public:
 		inline SimpleMemoryTrackerWrapper()
 		{
-			Simple::SimpleMemoryTracker::Init();
+			Simple::SimpleMemoryTracker::Initialize();
 		}
 
 		inline ~SimpleMemoryTrackerWrapper()
