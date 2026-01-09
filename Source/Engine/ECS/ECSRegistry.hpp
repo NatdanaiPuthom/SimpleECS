@@ -8,7 +8,7 @@ namespace Simple
 {
 	struct TypeErasureComponent final
 	{
-		ComponentTypeIdentity identity = { 0, "Invalid", nullptr, nullptr, nullptr };
+		ComponentTypeIdentity identity;
 		size_t sizeOf = 0;
 		size_t alignOf = 0;
 	};
@@ -92,12 +92,7 @@ namespace Simple
 			 bool valid = false;
 		};
 
-		static const TypeErasureComponent invalid = {
-			{0, "Invalid", nullptr, nullptr, nullptr},
-			sizeof(Dummy),
-			alignof(Dummy)
-		};
-
+		static const TypeErasureComponent invalid = {};
 		return invalid;
 	}
 

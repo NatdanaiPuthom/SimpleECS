@@ -2,6 +2,8 @@
 #include <vector>
 #include "MemoryPool/MemoryPool.hpp"
 #include "ECSRegistry.hpp"
+#include <iostream>
+#include <format>
 
 namespace Simple
 {
@@ -18,13 +20,16 @@ namespace Simple
 		}
 
 		template<IsComponent T>
-		size_t AddComponent()
+		void AddComponent()
 		{
-			size_t index = ECSRegistry::GetInstance()->GetComponentPoolIndex<T>();
+			const auto& registeredComponents = ECSRegistry::GetInstance()->GetRegisteredComponents();
 
-			//myComponents[index].CreateComponent<T>();
-
-			return sizeof(T);
+			for (const auto& [hash, comp] : registeredComponents)
+			{
+				myComponents.emplace_back(MemoryPool(comp.identity));
+		
+				std::cout << std::format("Component: {} HashCode: {}", comp.identity.GetName(), hash.value) << std::endl;
+			}
 		}
 
 	private:

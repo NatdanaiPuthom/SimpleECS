@@ -11,19 +11,16 @@ namespace Simple
 	private:
 		enum class Byte : unsigned char {};
 	public:
-
-		template<IsComponent T>
-		static MemoryPool CreatePool();
-
+		MemoryPool(const ComponentTypeIdentity& aComponentTypeIdentity, const size_t aReservedCount = 1);
 		~MemoryPool();
 
-		MemoryPool(const MemoryPool& aOther) = delete;
-		MemoryPool& operator=(const MemoryPool& aOther) = delete;
+		MemoryPool(const MemoryPool& aOther);
+		MemoryPool& operator=(const MemoryPool& aOther);
 
 		MemoryPool(MemoryPool&& aOther) noexcept;
 		MemoryPool& operator=(MemoryPool&& aOther) noexcept;
 
-		size_t CreateObject();
+		size_t CreateObject(const void* aDefaultValue = nullptr);
 
 		template<IsComponent T>
 		T* GetObjectAtIndex(const size_t aIndex);
@@ -34,8 +31,6 @@ namespace Simple
 
 		void PrintMemoryStatus() const;
 	private:
-		MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aReserveAmount = 1);
-
 		void Allocate(const size_t aSize);
 		void Reallocate(const size_t aRequiredAdditionalBytes);
 	private:
@@ -45,19 +40,8 @@ namespace Simple
 		Byte* myStartMemoryAddress;
 		Byte* myEndMemoryAddress;
 
-		size_t myAlignment;
-		size_t mySize;
 		size_t myCount;
 	};
-
-	template<IsComponent T>
-	inline MemoryPool MemoryPool::CreatePool()
-	{
-		MemoryPool pool(sizeof(T), alignof(T));
-		pool.myComponentTypeIdentity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
-
-		return pool;
-	}
 
 	template<IsComponent T>
 	inline T* MemoryPool::GetObjectAtIndex(const size_t aIndex)
@@ -71,6 +55,6 @@ namespace Simple
 			return nullptr;
 		}
 
-		return reinterpret_cast<T*>(myStartMemoryAddress + mySize * aIndex);
+		return reinterpret_cast<T*>(myStartMemoryAddress + myComponentTypeIdentity.GetSize() * aIndex);
 	}
 }

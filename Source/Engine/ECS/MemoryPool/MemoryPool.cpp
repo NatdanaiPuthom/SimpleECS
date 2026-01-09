@@ -5,48 +5,85 @@
 
 namespace Simple
 {
-	MemoryPool::MemoryPool(const size_t aTypeSize, const size_t aTypeAlignment, const size_t aReserveAmount)
-		: myCurrentMemoryAddress(nullptr)
+	MemoryPool::MemoryPool(const ComponentTypeIdentity& aComponentTypeIdentity, const size_t aReservedCount)
+		: myComponentTypeIdentity(aComponentTypeIdentity)
+		, myCurrentMemoryAddress(nullptr)
 		, myStartMemoryAddress(nullptr)
 		, myEndMemoryAddress(nullptr)
-		, myAlignment(aTypeAlignment)
 		, myCount(0)
-		, mySize(aTypeSize)
 	{
-		Allocate(aTypeSize * aReserveAmount);
+		Allocate(myComponentTypeIdentity.GetSize() * aReservedCount);
 	}
 
 	MemoryPool::~MemoryPool()
 	{
 		for (size_t i = 0; i < myCount; i++)
 		{
-			myComponentTypeIdentity.InvokeDestroy(myStartMemoryAddress + mySize * i);
+			myComponentTypeIdentity.InvokeDestroy(myStartMemoryAddress + myComponentTypeIdentity.GetSize() * i);
 		}
 
-		::operator delete(myStartMemoryAddress, std::align_val_t(myAlignment));
+		::operator delete(myStartMemoryAddress, std::align_val_t(myComponentTypeIdentity.GetAlignment()));
 
 		myStartMemoryAddress = nullptr;
 		myEndMemoryAddress = nullptr;
 		myCurrentMemoryAddress = nullptr;
-		myAlignment = 0;
 		myCount = 0;
-		mySize = 0;
+	}
+
+	MemoryPool::MemoryPool(const MemoryPool& aOther)
+		: myComponentTypeIdentity(aOther.myComponentTypeIdentity)
+		, myCount(aOther.myCount)
+		, myCurrentMemoryAddress(nullptr)
+		, myStartMemoryAddress(nullptr)
+		, myEndMemoryAddress(nullptr)
+	{
+		Allocate(myComponentTypeIdentity.GetSize() * myCount);
+
+		const size_t size = this->myComponentTypeIdentity.GetSize();
+
+		for (size_t i = 0; i < this->myCount; i++)
+		{
+			Byte* destination = this->myStartMemoryAddress + size * i;
+			Byte* source = aOther.myStartMemoryAddress + size * i;
+			this->myComponentTypeIdentity.InvokeCopy(destination, source);
+		}
+	}
+
+	MemoryPool& Simple::MemoryPool::operator=(const MemoryPool& aOther)
+	{
+		if (this != &aOther)
+		{
+			this->myComponentTypeIdentity = aOther.myComponentTypeIdentity;
+			this->myCount = aOther.myCount;
+			this->myCurrentMemoryAddress = nullptr;
+			this->myStartMemoryAddress = nullptr;
+			this->myEndMemoryAddress = nullptr;
+
+			Allocate(myComponentTypeIdentity.GetSize() * myCount);
+
+			const size_t size = this->myComponentTypeIdentity.GetSize();
+
+			for (size_t i = 0; i < this->myCount; i++)
+			{
+				Byte* destination = this->myStartMemoryAddress + size * i;
+				const Byte* source = aOther.myStartMemoryAddress + size * i;
+				this->myComponentTypeIdentity.InvokeCopy(destination, source);
+			}
+		}
+
+		return *this;
 	}
 
 	MemoryPool::MemoryPool(MemoryPool&& aOther) noexcept
 		: myCurrentMemoryAddress(aOther.myCurrentMemoryAddress)
 		, myStartMemoryAddress(aOther.myStartMemoryAddress)
 		, myEndMemoryAddress(aOther.myEndMemoryAddress)
-		, myAlignment(aOther.myAlignment)
 		, myCount(aOther.myCount)
-		, mySize(aOther.mySize)
 	{
 		aOther.myCurrentMemoryAddress = nullptr;
 		aOther.myStartMemoryAddress = nullptr;
 		aOther.myEndMemoryAddress = nullptr;
-		aOther.myAlignment = 0;
 		aOther.myCount = 0;
-		aOther.mySize = 0;
 	}
 
 	MemoryPool& MemoryPool::operator=(MemoryPool&& aOther) noexcept
@@ -56,16 +93,12 @@ namespace Simple
 			this->myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
 			this->myStartMemoryAddress = aOther.myStartMemoryAddress;
 			this->myEndMemoryAddress = aOther.myEndMemoryAddress;
-			this->myAlignment = aOther.myAlignment;
 			this->myCount = aOther.myCount;
-			this->mySize = aOther.mySize;
 
 			aOther.myCurrentMemoryAddress = nullptr;
 			aOther.myStartMemoryAddress = nullptr;
 			aOther.myEndMemoryAddress = nullptr;
-			aOther.myAlignment = 0;
 			aOther.myCount = 0;
-			aOther.mySize = 0;
 		}
 
 		return *this;
@@ -97,21 +130,12 @@ namespace Simple
 		std::cout << "Occupied Memory Space: " << GetOccupiedMemorySpace() << std::endl;
 		std::cout << "Avaliable Memory Space: " << GetAvailableMemorySpace() << std::endl;
 		std::cout << "Component Count: " << myCount << std::endl;
-		std::cout << std::endl;
-		std::cout << "Advanced: " << std::endl;
-		//std::cout << "Create Function Address: " << myComponentTypeIdentity.myCreateObjectFunction << std::endl;
-		//std::cout << "Move Function Address: " << myMoveObjectFunction << std::endl;
-		//std::cout << "Destroy Function Address: " << myDestroyObjectFunction << std::endl;
-		//std::cout << std::endl;
-		//std::cout << "Create Function Ptr Address: " << &myCreateObjectFunction << std::endl;
-		//std::cout << "Move Function Ptr Address: " << &myMoveObjectFunction << std::endl;
-		//std::cout << "Destroy Function Ptr Address: " << &myDestroyObjectFunction << std::endl;
-		//std::cout << "--------------------" << std::endl;
+		std::cout << "--------------------" << std::endl;
 	}
 
 	void MemoryPool::Allocate(const size_t aSize)
 	{
-		myStartMemoryAddress = static_cast<Byte*>(::operator new(aSize, std::align_val_t(myAlignment)));
+		myStartMemoryAddress = static_cast<Byte*>(::operator new(aSize, std::align_val_t(myComponentTypeIdentity.GetAlignment())));
 		myEndMemoryAddress = myStartMemoryAddress + aSize;
 		myCurrentMemoryAddress = myStartMemoryAddress;
 
@@ -136,26 +160,26 @@ namespace Simple
 
 		for (size_t i = 0; i < myCount; i++)
 		{
-			Byte* oldComponentAddress = oldStartMemoryAddress + mySize * i;
-			Byte* newComponentAddress = myStartMemoryAddress + mySize * i;
+			Byte* oldComponentAddress = oldStartMemoryAddress + myComponentTypeIdentity.GetSize() * i;
+			Byte* newComponentAddress = myStartMemoryAddress + myComponentTypeIdentity.GetSize() * i;
 
 			myComponentTypeIdentity.InvokeMove(newComponentAddress, oldComponentAddress);
 		}
 
-		::operator delete(oldStartMemoryAddress, std::align_val_t(myAlignment));
+		::operator delete(oldStartMemoryAddress, std::align_val_t(myComponentTypeIdentity.GetAlignment()));
 
 		myCurrentMemoryAddress = myStartMemoryAddress + occupiedMemorySpace;
 		myEndMemoryAddress = myStartMemoryAddress + newMemoryCapacity;
 	}
 
-	size_t MemoryPool::CreateObject()
+	size_t MemoryPool::CreateObject(const void* aDefaultValue)
 	{
-		if (mySize > GetAvailableMemorySpace())
+		if (myComponentTypeIdentity.GetSize() > GetAvailableMemorySpace())
 		{
-			Reallocate(mySize);
+			Reallocate(myComponentTypeIdentity.GetSize());
 		}
 
-		myCurrentMemoryAddress += myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress);
+		myCurrentMemoryAddress += myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress, aDefaultValue);
 		return myCount++;
 	}
 }
