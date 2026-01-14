@@ -38,7 +38,7 @@ namespace Simple
 		, myEndMemoryAddress(nullptr)
 	{
 		Allocate(myComponentTypeIdentity.GetSize() * myCount);
-		CopyComponents(aOther);
+		CopyObjeccts(aOther);
 	}
 
 	MemoryPool& Simple::MemoryPool::operator=(const MemoryPool& aOther)
@@ -52,7 +52,7 @@ namespace Simple
 			this->myEndMemoryAddress = nullptr;
 
 			Allocate(myComponentTypeIdentity.GetSize() * myCount);
-			CopyComponents(aOther);
+			CopyObjeccts(aOther);
 		}
 
 		return *this;
@@ -168,7 +168,7 @@ namespace Simple
 		return true;
 	}
 
-	void MemoryPool::CopyComponents(const MemoryPool& aSource)
+	void MemoryPool::CopyObjeccts(const MemoryPool& aSource)
 	{
 		const size_t size = this->myComponentTypeIdentity.GetSize();
 

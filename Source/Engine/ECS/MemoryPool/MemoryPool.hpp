@@ -3,6 +3,7 @@
 #include "ECS/Component/ComponentTypeIdentity.hpp"
 #include "Debugger/Assert.hpp"
 #include <string_view>
+#include <span>
 
 namespace Simple
 {
@@ -23,7 +24,10 @@ namespace Simple
 		size_t CreateObject(const void* aDefaultValue = nullptr);
 
 		template<IsComponent T>
-		T* GetObjectAtIndex(const size_t aIndex);
+		T* GetObjectAtIndex(const size_t aIndex) const;
+
+		template<IsComponent T>
+		std::span<T> GetObjects() const;
 
 		size_t GetAvailableMemorySpace() const;
 		size_t GetOccupiedMemorySpace() const;
@@ -33,7 +37,7 @@ namespace Simple
 	private:
 		bool Allocate(const size_t aSize);
 		bool Reallocate(const size_t aRequiredAdditionalBytes);
-		void CopyComponents(const MemoryPool& aSource);
+		void CopyObjeccts(const MemoryPool& aSource);
 	private:
 		ComponentTypeIdentity myComponentTypeIdentity;
 
@@ -45,7 +49,7 @@ namespace Simple
 	};
 
 	template<IsComponent T>
-	inline T* MemoryPool::GetObjectAtIndex(const size_t aIndex)
+	inline T* MemoryPool::GetObjectAtIndex(const size_t aIndex) const
 	{
 		if (ComponentTypeIdentity::GetComponentTypeIdentity<T>() != myComponentTypeIdentity)
 		{
@@ -57,5 +61,11 @@ namespace Simple
 		}
 
 		return reinterpret_cast<T*>(myStartMemoryAddress + myComponentTypeIdentity.GetSize() * aIndex);
+	}
+
+	template<IsComponent T>
+	inline std::span<T> MemoryPool::GetObjects() const
+	{
+		return std::span<T>(reinterpret_cast<T*>(myStartMemoryAddress), myCount);
 	}
 }
