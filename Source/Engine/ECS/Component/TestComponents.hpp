@@ -20,4 +20,3 @@ namespace Simple
 
 	REGISTER_COMPONENT(EricoTest);
 }
-

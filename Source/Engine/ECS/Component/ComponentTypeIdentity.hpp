@@ -127,3 +127,5 @@ namespace Simple
 
 //TO-DO 08/01/2026 Insider [11312.210]: Intellisense -> E3244: template constraint not satisfied type constraint failed for "int" atomic constraint evaluates to false
 //Comment: I tried, I have no clue, GPT no clue also Claude
+
+//TO-DO  14/01/2026: Same issue with  Intellisense -> E3244 on Visual Studio 2026 Stable version

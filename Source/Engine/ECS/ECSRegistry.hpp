@@ -87,9 +87,9 @@ namespace Simple
 			return it->second;
 		}
 
-		 struct Dummy : Component
+		struct Dummy : Component
 		{
-			 bool valid = false;
+			bool valid = false;
 		};
 
 		static const TypeErasureComponent invalid = {};
@@ -102,7 +102,11 @@ namespace Simple
 	public:
 		ECSRegisterComponent()
 		{
-			ECSRegistry::GetInstance()->Register<T>();
+			[[maybe_unused]] static bool registered = []()
+				{
+					ECSRegistry::GetInstance()->Register<T>();
+					return true;
+				}();
 		}
 	};
 
