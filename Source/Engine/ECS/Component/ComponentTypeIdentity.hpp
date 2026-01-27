@@ -35,8 +35,14 @@ namespace Simple
 
 		~ComponentTypeIdentity();
 
-		template<IsComponent T>
-		static ComponentTypeIdentity GetComponentTypeIdentity();
+		bool operator==(const ComponentTypeIdentity& aOther) const;
+		bool operator!=(const ComponentTypeIdentity& aOther) const;
+
+		ComponentTypeIdentity(const ComponentTypeIdentity& aOther) noexcept;
+		ComponentTypeIdentity& operator=(const ComponentTypeIdentity& aOther) noexcept;
+
+		ComponentTypeIdentity(ComponentTypeIdentity&& aOther) noexcept;
+		ComponentTypeIdentity& operator=(ComponentTypeIdentity&& aOther) noexcept;
 
 		size_t InvokeCreate(void* aDestinationAddress, const void* aDefaultValue) const;
 		void InvokeCopy(void* aDestinationAddress, const void* aSourceAddress) const;
@@ -50,14 +56,8 @@ namespace Simple
 		size_t GetSize() const;
 		const char* GetName() const;
 
-		bool operator==(const ComponentTypeIdentity& aOther) const;
-		bool operator!=(const ComponentTypeIdentity& aOther) const;
-
-		ComponentTypeIdentity(const ComponentTypeIdentity& aOther) noexcept;
-		ComponentTypeIdentity& operator=(const ComponentTypeIdentity& aOther) noexcept;
-
-		ComponentTypeIdentity(ComponentTypeIdentity&& aOther) noexcept;
-		ComponentTypeIdentity& operator=(ComponentTypeIdentity&& aOther) noexcept;
+		template<IsComponent T>
+		static ComponentTypeIdentity GetComponentTypeIdentity();
 
 	private:
 		size_t myID;
@@ -73,7 +73,8 @@ namespace Simple
 	template<IsComponent T>
 	inline ComponentTypeIdentity ComponentTypeIdentity::GetComponentTypeIdentity()
 	{
-		static const char* name = typeid(T).name();
+		static const char* name = typeid(T).name(); //TO-DO 15/01/2026: May need to change to std::string due to output is unrealiable across compliers
+
 		static const size_t id = ComponentIdentityID<T>::GetID();
 
 		static CreateComponentFunctionPtr createFunctionPointer = [](void* aDestinationAddress, const void* aDefaultValuePointer) -> size_t
