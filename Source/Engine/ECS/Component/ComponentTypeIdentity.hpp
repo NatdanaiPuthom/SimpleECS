@@ -2,12 +2,13 @@
 #include "Component.hpp"
 #include <typeindex>
 #include <type_traits>
+#include <string>
 
 namespace Simple
 {
 	inline size_t ComponentIdentityIDGenerateNextID()
 	{
-		static size_t counter = 1;
+		static size_t counter = 0;
 		return counter++;
 	}
 
@@ -54,16 +55,16 @@ namespace Simple
 		size_t GetID() const;
 		size_t GetAlignment() const;
 		size_t GetSize() const;
-		const char* GetName() const;
+		const std::string& GetName() const;
 
 		template<IsComponent T>
 		static ComponentTypeIdentity GetComponentTypeIdentity();
 
 	private:
+		std::string myName;
 		size_t myID;
 		size_t myAlignment;
 		size_t mySize;
-		const char* myName;
 		CreateComponentFunctionPtr myCreateComponentFunctionPointer;
 		CopyComponentFunctionPtr myCopyComponentFunctionPointer;
 		MoveComponentFunctionPtr myMoveComponentFunctionPointer;
@@ -73,7 +74,7 @@ namespace Simple
 	template<IsComponent T>
 	inline ComponentTypeIdentity ComponentTypeIdentity::GetComponentTypeIdentity()
 	{
-		static const char* name = typeid(T).name(); //TO-DO 15/01/2026: May need to change to std::string due to output is unrealiable across compliers
+		static const char* name = typeid(T).name();
 
 		static const size_t id = ComponentIdentityID<T>::GetID();
 

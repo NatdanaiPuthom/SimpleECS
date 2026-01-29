@@ -1,4 +1,5 @@
 #include "ComponentTypeIdentity.hpp"
+#include "ECS/MaxComponents.hpp"
 
 namespace Simple
 {
@@ -54,7 +55,7 @@ namespace Simple
 		return mySize;
 	}
 
-	const char* ComponentTypeIdentity::GetName() const
+	const std::string& ComponentTypeIdentity::GetName() const
 	{
 		return myName;
 	}
@@ -95,7 +96,7 @@ namespace Simple
 
 	bool ComponentTypeIdentity::IsValid() const
 	{
-		return (myID != 0);
+		return (myID < GLOBAL_MAX_COMPONENTS);
 	}
 
 	bool ComponentTypeIdentity::operator==(const ComponentTypeIdentity& aOther) const

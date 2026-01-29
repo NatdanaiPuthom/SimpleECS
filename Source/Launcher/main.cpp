@@ -3,8 +3,9 @@
 #include "Engine/Debugger/Console/Console.hpp"
 
 #include "Engine/ECS/ECSRegistry.hpp"
-#include "Engine/ECS/Managers/ComponentManager.hpp"
-#include "Engine/ECS/EntityManager.hpp"
+#include "Engine/ECS/EntityComponentSystem.hpp"
+
+#include "Engine/ECS/Component/TestComponents.hpp"
 
 using namespace Simple;
 
@@ -13,11 +14,13 @@ int main()
 	Console console;
 	console.Initialize();
 
-	ComponentManager componentManager;
-	componentManager.Initialize();
+	EntityComponentSystem ecs;
+	ecs.Initialize();
 
-	EntityManager entityManager;
-	entityManager.Initialize();
+	Entity& newEntity = ecs.CreateEntity();
+	EmilTest* newComponent = ecs.AddComponent<EmilTest>(newEntity);
+
+	newComponent;
 
 	ECSRegistry::GetInstance()->Destroy();
 

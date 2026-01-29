@@ -60,6 +60,7 @@ namespace Simple
 
 	MemoryPool::MemoryPool(MemoryPool&& aOther) noexcept
 		: myCurrentMemoryAddress(aOther.myCurrentMemoryAddress)
+		, myComponentTypeIdentity(aOther.myComponentTypeIdentity)
 		, myStartMemoryAddress(aOther.myStartMemoryAddress)
 		, myEndMemoryAddress(aOther.myEndMemoryAddress)
 		, myCount(aOther.myCount)
@@ -74,6 +75,7 @@ namespace Simple
 	{
 		if (this != &aOther)
 		{
+			this->myComponentTypeIdentity = aOther.myComponentTypeIdentity;
 			this->myCurrentMemoryAddress = aOther.myCurrentMemoryAddress;
 			this->myStartMemoryAddress = aOther.myStartMemoryAddress;
 			this->myEndMemoryAddress = aOther.myEndMemoryAddress;
@@ -195,7 +197,8 @@ namespace Simple
 		if (success > 0)
 		{
 			myCurrentMemoryAddress += success;
-			return myCount++;
+			myCount++;
+			return myCount;
 		}
 
 		return 0;
