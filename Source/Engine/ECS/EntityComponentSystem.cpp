@@ -19,8 +19,7 @@ namespace Simple
 
 		for (const auto& [hash, comp] : allRegisteredComponents)
 		{
-			ComponentTypeIdentity identity = comp.identity;
-			myComponents.emplace_back(identity, 1);
+			myComponents.emplace_back(comp.identity);
 		}
 
 		return true;

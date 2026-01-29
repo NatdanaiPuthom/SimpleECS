@@ -18,9 +18,7 @@ int main()
 	ecs.Initialize();
 
 	Entity& newEntity = ecs.CreateEntity();
-	EmilTest* newComponent = ecs.AddComponent<EmilTest>(newEntity);
-
-	newComponent;
+	[[maybe_unused]] EmilTest* newComponent = ecs.AddComponent<EmilTest>(newEntity);
 
 	ECSRegistry::GetInstance()->Destroy();
 

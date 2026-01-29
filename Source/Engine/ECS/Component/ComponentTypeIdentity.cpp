@@ -4,7 +4,7 @@
 namespace Simple
 {
 	ComponentTypeIdentity::ComponentTypeIdentity()
-		: myID(0)
+		: myID(GLOBAL_MAX_COMPONENTS)
 		, myAlignment(0)
 		, mySize(0)
 		, myName("Invalid")
@@ -29,7 +29,7 @@ namespace Simple
 
 	ComponentTypeIdentity::~ComponentTypeIdentity()
 	{
-		myID = 0;
+		myID = GLOBAL_MAX_COMPONENTS;
 		myAlignment = 0;
 		mySize = 0;
 		myName = "Invalid";
@@ -154,7 +154,7 @@ namespace Simple
 		, myMoveComponentFunctionPointer(aOther.myMoveComponentFunctionPointer)
 		, myDestroyComponentFunctionPointer(aOther.myDestroyComponentFunctionPointer)
 	{
-		aOther.myID = 0;
+		aOther.myID = GLOBAL_MAX_COMPONENTS;
 		aOther.myAlignment = 0;
 		aOther.mySize = 0;
 		aOther.myName = "Invalid";
@@ -177,7 +177,7 @@ namespace Simple
 			this->myMoveComponentFunctionPointer = aOther.myMoveComponentFunctionPointer;
 			this->myDestroyComponentFunctionPointer = aOther.myDestroyComponentFunctionPointer;
 
-			aOther.myID = 0;
+			aOther.myID = GLOBAL_MAX_COMPONENTS;
 			aOther.myAlignment = 0;
 			aOther.mySize = 0;
 			aOther.myName = "Invalid";

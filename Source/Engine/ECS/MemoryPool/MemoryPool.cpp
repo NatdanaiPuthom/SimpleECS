@@ -1,5 +1,6 @@
 #include "MemoryPool.hpp"
 #include "Debugger/Assert.hpp"
+#include "ECS/MaxComponents.hpp"
 #include <new>
 #include <iostream>
 
@@ -188,7 +189,7 @@ namespace Simple
 		{
 			if (Reallocate(myComponentTypeIdentity.GetSize()) == false)
 			{
-				return 0;
+				return GLOBAL_MAX_COMPONENTS;
 			}
 		}
 
@@ -197,10 +198,9 @@ namespace Simple
 		if (success > 0)
 		{
 			myCurrentMemoryAddress += success;
-			myCount++;
-			return myCount;
+			return myCount++;
 		}
 
-		return 0;
+		return GLOBAL_MAX_COMPONENTS;
 	}
 }

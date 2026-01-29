@@ -1,5 +1,6 @@
 #pragma once
 #include "ECS/MemoryPool/MemoryPool.hpp"
+#include "ECS/MaxComponents.hpp"
 #include "ECS/Entity.hpp"
 #include <vector>
 #include <bitset>
@@ -7,8 +8,6 @@
 
 namespace Simple
 {
-	inline constexpr size_t GLOBAL_MAX_COMPONENTS = 64;
-
 	class EntityComponentSystem final
 	{
 	public:
@@ -38,7 +37,7 @@ namespace Simple
 
 		T* newComponent = nullptr;
 
-		if (success > 0)
+		if (success < GLOBAL_MAX_COMPONENTS)
 		{
 			newComponent = myComponents[ComponentIdentityID<T>().GetID()].GetObjectAtIndex<T>(success);
 		}
