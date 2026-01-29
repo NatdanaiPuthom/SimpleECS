@@ -16,7 +16,7 @@ namespace Simple
 		EntityComponentSystem();
 		~EntityComponentSystem();
 
-		bool Initialize();
+		void Initialize();
 
 		Entity& CreateEntity();
 
@@ -24,6 +24,7 @@ namespace Simple
 		T* AddComponent(Entity& aEntity);
 	private:
 		std::unordered_map<ComponentSignature, std::vector<Entity>> mySignatureToEntities;
+		std::vector<ComponentSignature> myEntitySignatures;
 		std::vector<MemoryPool> myComponents;
 		size_t myNextEntityID;
 	};
@@ -31,15 +32,15 @@ namespace Simple
 	template<typename T>
 	inline T* EntityComponentSystem::AddComponent(Entity& aEntity)
 	{
-		aEntity;
-
-		size_t success = myComponents[ComponentIdentityID<T>().GetID()].CreateObject();
+		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
+		const size_t success = myComponents[componentIdentityID].CreateObject();
 
 		T* newComponent = nullptr;
 
 		if (success < GLOBAL_MAX_COMPONENTS)
 		{
-			newComponent = myComponents[ComponentIdentityID<T>().GetID()].GetObjectAtIndex<T>(success);
+			newComponent = myComponents[componentIdentityID].GetObjectAtIndex<T>(success);
+			myEntitySignatures[aEntity.id].set(componentIdentityID, true);
 		}
 
 		return newComponent;

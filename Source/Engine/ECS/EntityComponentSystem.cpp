@@ -11,9 +11,12 @@ namespace Simple
 	EntityComponentSystem::~EntityComponentSystem()
 	{
 		myComponents.clear();
+		myEntitySignatures.clear();
+		mySignatureToEntities.clear();
+		myNextEntityID = 0;
 	}
 
-	bool EntityComponentSystem::Initialize()
+	void EntityComponentSystem::Initialize()
 	{
 		const auto& allRegisteredComponents = ECSRegistry::GetInstance()->GetRegisteredComponents();
 
@@ -21,16 +24,16 @@ namespace Simple
 		{
 			myComponents.emplace_back(comp.identity);
 		}
-
-		return true;
 	}
 
 	Entity& EntityComponentSystem::CreateEntity()
 	{
 		const ComponentSignature signature;
-
 		auto& entities = mySignatureToEntities[signature];
+
 		Entity& newEntity = entities.emplace_back(myNextEntityID);
+		myEntitySignatures.push_back(signature);
+
 		myNextEntityID++;
 
 		return newEntity;
