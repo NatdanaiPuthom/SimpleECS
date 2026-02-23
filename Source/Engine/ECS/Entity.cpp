@@ -57,6 +57,16 @@ namespace Simple
 		return *this;
 	}
 
+	void Entity::AddComponent(const size_t aComponentIdentityID)
+	{
+		myComponentsSignature.set(aComponentIdentityID, true);
+	}
+
+	void Entity::RemoveComponent(const size_t aComponentIdentityID)
+	{
+		myComponentsSignature.set(aComponentIdentityID, false);
+	}
+
 	void Entity::SetName(const char* aName)
 	{
 		myName = aName;

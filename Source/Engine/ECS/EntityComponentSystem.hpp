@@ -43,6 +43,8 @@ namespace Simple
 			return false;
 		}
 
+		aEntity.AddComponent(componentIdentityID);
+
 		const MemoryPool::OperationStatus status = myComponents[componentIdentityID].CreateObject();
 
 		return status.success;

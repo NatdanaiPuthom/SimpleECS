@@ -1,12 +1,16 @@
 #pragma once
 #include "ECS/Constants/ComponentsSignature.hpp"
 #include "ECS/Concepts/Component.hpp"
+#include "ECS/Component/ComponentTypeIdentity.hpp"
 #include <string>
 
 namespace Simple
 {
+	class EntityComponentSystem;
+
 	class Entity final
 	{
+		friend class EntityComponentSystem;
 	public:
 		Entity(const size_t aID);
 		Entity(const size_t aID, const char* aName);
@@ -25,9 +29,21 @@ namespace Simple
 		const std::string& GetName() const;
 		const ComponentsSignature GetComponentsSignature() const;
 
+		template<IsComponent T>
+		bool HasComponent();
+
+	private:
+		void AddComponent(const size_t aComponentIdentityID);
+		void RemoveComponent(const size_t aComponentIdentityID);
 	private:
 		std::string myName;
 		ComponentsSignature myComponentsSignature;
 		size_t myID;
 	};
+
+	template<IsComponent T>
+	inline bool Entity::HasComponent()
+	{
+		return myComponentsSignature.test(ComponentIdentityID<T>().GetID());
+	}
 }
