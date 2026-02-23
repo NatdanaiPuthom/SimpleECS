@@ -21,6 +21,12 @@ namespace Simple
 			static const size_t id = ComponentIdentityIDGenerateNextID();
 			return id;
 		}
+
+		static const char* GetName()
+		{
+			static const char* name = typeid(T).name();
+			return name;
+		}
 	};
 
 	class ComponentTypeIdentity final
