@@ -183,24 +183,45 @@ namespace Simple
 		}
 	}
 
-	size_t MemoryPool::CreateObject(const void* aDefaultValue)
+	const MemoryPool::OperationStatus MemoryPool::CreateObject(const void* aDefaultValue)
 	{
+		OperationStatus status;
+		status.success = false;
+
 		if (myComponentTypeIdentity.GetSize() > GetAvailableMemorySpace())
 		{
 			if (Reallocate(myComponentTypeIdentity.GetSize()) == false)
 			{
-				return GLOBAL_MAX_COMPONENTS;
+				return status;
 			}
 		}
 
-		const size_t success = myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress, aDefaultValue);
+		const size_t objectSize = myComponentTypeIdentity.InvokeCreate(myCurrentMemoryAddress, aDefaultValue);
 
-		if (success > 0)
+		if (objectSize != 0)
 		{
-			myCurrentMemoryAddress += success;
-			return myCount++;
+			myCurrentMemoryAddress += objectSize;
+
+			status.success = true;
+			status.createdObjectIndex = myCount;
+			myCount++;
+
+			return status;
 		}
 
-		return GLOBAL_MAX_COMPONENTS;
+		return status;
+	}
+
+	void MemoryPool::DestroyObject(const size_t aIndex)
+	{
+		const size_t size = myComponentTypeIdentity.GetSize();
+
+		Byte* componentToRemoveAddress = myStartMemoryAddress + size * aIndex;
+		Byte* lastComponentToSwap = myStartMemoryAddress + size * myCount;
+
+		myComponentTypeIdentity.InvokeMove(componentToRemoveAddress, lastComponentToSwap);
+
+		myCurrentMemoryAddress -= size;
+		myCount--;
 	}
 }

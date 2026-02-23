@@ -9,6 +9,12 @@ namespace Simple
 {
 	class MemoryPool final
 	{
+	public:
+		struct OperationStatus
+		{
+			size_t createdObjectIndex = 0;
+			bool success = false;
+		};
 	private:
 		enum class Byte : unsigned char {};
 	public:
@@ -21,7 +27,9 @@ namespace Simple
 		MemoryPool(MemoryPool&& aOther) noexcept;
 		MemoryPool& operator=(MemoryPool&& aOther) noexcept;
 
-		size_t CreateObject(const void* aDefaultValue = nullptr);
+		const MemoryPool::OperationStatus CreateObject(const void* aDefaultValue = nullptr);
+
+		void DestroyObject(const size_t aIndex);
 
 		template<IsComponent T>
 		T* GetObjectAtIndex(const size_t aIndex) const;
