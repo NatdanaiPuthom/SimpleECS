@@ -1,17 +1,17 @@
 #pragma once
 #include "ECS/MemoryPool/MemoryPool.hpp"
-#include "ECS/MaxComponents.hpp"
+#include "ECS/Constants/MaxComponents.hpp"
+#include "ECS/Constants/ComponentsSignature.hpp"
 #include "ECS/Entity.hpp"
 #include <vector>
-#include <bitset>
 #include <unordered_map>
+#include <array>
 
 namespace Simple
 {
 	class EntityComponentSystem final
 	{
 	public:
-		using ComponentSignature = std::bitset<GLOBAL_MAX_COMPONENTS>;
 	public:
 		EntityComponentSystem();
 		~EntityComponentSystem();
@@ -20,29 +20,31 @@ namespace Simple
 
 		Entity& CreateEntity();
 
-		template<typename T>
-		T* AddComponent(Entity& aEntity);
+		void DestroyEntity(size_t aEntityIndex);
+
+		template<IsComponent T>
+		bool AddComponent(Entity& aEntity);
 	private:
-		std::unordered_map<ComponentSignature, std::vector<Entity>> mySignatureToEntities;
-		std::vector<ComponentSignature> myEntitySignatures;
-		std::vector<MemoryPool> myComponents;
+		std::vector<MemoryPool> myComponents; //ComponentIdentityID<T>().GetID() is the Index
+		std::unordered_map<ComponentsSignature, std::vector<Entity>> mySignatureToEntities;
+
 		size_t myNextEntityID;
 	};
 
-	template<typename T>
-	inline T* EntityComponentSystem::AddComponent(Entity& aEntity)
+	template<IsComponent T>
+	inline bool EntityComponentSystem::AddComponent(Entity& aEntity)
 	{
 		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
-		const size_t success = myComponents[componentIdentityID].CreateObject();
+		const bool componentAlreadyExist = aEntity.GetComponentsSignature().test(componentIdentityID);
 
-		T* newComponent = nullptr;
-
-		if (success < GLOBAL_MAX_COMPONENTS)
+		if (componentAlreadyExist == true)
 		{
-			newComponent = myComponents[componentIdentityID].GetObjectAtIndex<T>(success);
-			myEntitySignatures[aEntity.id].set(componentIdentityID, true);
+			DebugAssert(false, "Duplicate component type on entity is not allowed");
+			return false;
 		}
 
-		return newComponent;
+		const MemoryPool::OperationStatus status = myComponents[componentIdentityID].CreateObject();
+
+		return status.success;
 	}
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "Component.hpp"
+#include "ECS/Concepts/Component.hpp"
 #include <typeindex>
 #include <type_traits>
 #include <string>

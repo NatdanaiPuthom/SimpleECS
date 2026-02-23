@@ -1,36 +1,33 @@
 #pragma once
+#include "ECS/Constants/ComponentsSignature.hpp"
+#include "ECS/Concepts/Component.hpp"
 #include <string>
-#include <format>
 
 namespace Simple
 {
-	struct Entity final
+	class Entity final
 	{
-		std::string name;
-		const size_t id;
+	public:
+		Entity(const size_t aID);
+		Entity(const size_t aID, const char* aName);
 
-		Entity(const size_t aID)
-			: id(aID)
-			, name(std::format("New Entity {}", aID))
-		{
-		}
+		~Entity();
 
-		Entity(const size_t aID, const char* aName)
-			: id(aID)
-			, name(aName)
-		{
-		}
+		Entity(const Entity& aOther) noexcept;
+		Entity& operator=(const Entity& aOther) noexcept;
 
-		Entity(const Entity& aOther) noexcept
-			: id(aOther.id)
-			, name(aOther.name)
-		{
-		}
+		Entity(Entity&& aOther) noexcept;
+		Entity& operator=(Entity&& aOther) noexcept;
 
-		Entity(Entity&& aOther) noexcept
-			: id(aOther.id)
-			, name(std::move(aOther.name))
-		{
-		}
+		void SetName(const char* aName);
+
+		size_t GetID() const;
+		const std::string& GetName() const;
+		const ComponentsSignature GetComponentsSignature() const;
+
+	private:
+		std::string myName;
+		ComponentsSignature myComponentsSignature;
+		size_t myID;
 	};
 }

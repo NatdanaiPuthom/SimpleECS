@@ -1,5 +1,5 @@
 #include "ComponentTypeIdentity.hpp"
-#include "ECS/MaxComponents.hpp"
+#include "ECS/Constants/MaxComponents.hpp"
 
 namespace Simple
 {

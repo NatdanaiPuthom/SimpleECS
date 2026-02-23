@@ -17,8 +17,17 @@ int main()
 	EntityComponentSystem ecs;
 	ecs.Initialize();
 
-	Entity& newEntity = ecs.CreateEntity();
-	[[maybe_unused]] EmilTest* newComponent = ecs.AddComponent<EmilTest>(newEntity);
+	[[maybe_unused]] Entity& newEntity1 = ecs.CreateEntity();
+	[[maybe_unused]] Entity& newEntity2 = ecs.CreateEntity();
+	[[maybe_unused]] Entity& newEntity3 = ecs.CreateEntity();
+	[[maybe_unused]] Entity& newEntity4 = ecs.CreateEntity();
+
+	//ecs.DestroyEntity(newEntity2);
+
+	//[[maybe_unused]] EmilTest* newComponent = ecs.AddComponent<EmilTest>(newEntity1);
+
+	std::bitset<64> a;
+	a.set(1, true);
 
 	ECSRegistry::GetInstance()->Destroy();
 

@@ -1,6 +1,5 @@
 #include "MemoryPool.hpp"
 #include "Debugger/Assert.hpp"
-#include "ECS/MaxComponents.hpp"
 #include <new>
 #include <iostream>
 

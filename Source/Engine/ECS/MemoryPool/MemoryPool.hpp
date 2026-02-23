@@ -1,5 +1,5 @@
 #pragma once
-#include "ECS/Component/Component.hpp"
+#include "ECS/Concepts/Component.hpp"
 #include "ECS/Component/ComponentTypeIdentity.hpp"
 #include "Debugger/Assert.hpp"
 #include <string_view>
