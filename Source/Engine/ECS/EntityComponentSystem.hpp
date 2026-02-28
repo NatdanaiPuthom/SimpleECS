@@ -6,36 +6,65 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
+#include <algorithm>
 
 namespace Simple
 {
+	using EntityID = size_t;
+
 	class EntityComponentSystem final
 	{
-	public:
+	private:
+		using ComponentIndex = size_t;
+
+		struct EntityData
+		{
+			size_t index;
+			ComponentsSignature componentSignature;
+		};
 	public:
 		EntityComponentSystem();
 		~EntityComponentSystem();
 
 		void Initialize();
 
-		Entity& CreateEntity();
+		EntityID CreateEntity();
+		Entity& GetEntity(const EntityID aEntityID);
 
 		void DestroyEntity(size_t aEntityIndex);
 
 		template<IsComponent T>
-		bool AddComponent(Entity& aEntity);
+		bool AddComponent(const EntityID aEntityID);
+
+		template<IsComponent T>
+		bool RemoveComponent(Entity& aEntity);
 	private:
-		std::vector<MemoryPool> myComponents; //ComponentIdentityID<T>().GetID() is the Index
 		std::unordered_map<ComponentsSignature, std::vector<Entity>> mySignatureToEntities;
+		std::unordered_map<EntityID, EntityData> myEntityIDToEntityData;
+
+		std::vector<MemoryPool> myComponents; //NOTE(27/02/2026) ComponentIdentityID<T>().GetID() is the Index
+		std::array<std::unordered_map<EntityID, ComponentIndex>, GLOBAL_MAX_COMPONENTS> myEntityIDToComponentIndex; //NOTE(27/02/2026) ComponentIdentityID<T>().GetID() is the Array Index
+		std::array<std::unordered_map<ComponentIndex, EntityID>, GLOBAL_MAX_COMPONENTS> myComponentIndexToEntityID; //NOTE(27/02/2026) ComponentIdentityID<T>().GetID() is the Array Index
 
 		size_t myNextEntityID;
 	};
 
 	template<IsComponent T>
-	inline bool EntityComponentSystem::AddComponent(Entity& aEntity)
+	inline bool EntityComponentSystem::AddComponent(const EntityID aEntityID)
 	{
-		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
-		const bool componentAlreadyExist = aEntity.GetComponentsSignature().test(componentIdentityID);
+		auto it = myEntityIDToEntityData.find(aEntityID);
+
+		if (it == myEntityIDToEntityData.end())
+		{
+			DebugAssert(false, "Entity with this ID doesn't exist.");
+			return false;
+		}
+
+		EntityData& entityData = it->second;
+		const size_t index = entityData.index;
+		std::vector<Entity>& entities = mySignatureToEntities[entityData.componentSignature];
+
+		const bool componentAlreadyExist = entities[index].HasComponent<T>();
 
 		if (componentAlreadyExist == true)
 		{
@@ -43,10 +72,61 @@ namespace Simple
 			return false;
 		}
 
-		aEntity.AddComponent(componentIdentityID);
-
+		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
 		const MemoryPool::OperationStatus status = myComponents[componentIdentityID].CreateObject();
 
+		if (status.success == true)
+		{
+			const size_t entityID = entities[index].GetID();
+			const size_t componentIndex = status.createdObjectIndex;
+
+			entities[index].AddComponent(componentIdentityID);
+			entityData.componentSignature = entities[index].GetComponentsSignature();
+
+			myEntityIDToComponentIndex[componentIdentityID][entityID] = componentIndex;
+			myComponentIndexToEntityID[componentIdentityID][componentIndex] = entityID;
+
+			if (index != entities.size() - 1)
+			{
+				const EntityID lastEntityID = entities.back().GetID();
+				myEntityIDToEntityData[lastEntityID].index = index;
+
+				entities[index] = entities.back();
+				mySignatureToEntities[entityData.componentSignature].push_back(std::move(entities.back()));
+			}
+
+			entities.pop_back();
+		}
+
 		return status.success;
+	}
+
+	template<IsComponent T>
+	inline bool EntityComponentSystem::RemoveComponent(Entity& aEntity)
+	{
+		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
+		const size_t entityID = aEntity.GetID();
+
+		std::unordered_map<EntityID, ComponentIndex>& entityIDToComponentIndexMap = myEntityIDToComponentIndex[componentIdentityID];
+
+		auto it = entityIDToComponentIndexMap.find(entityID);
+
+		if (it == entityIDToComponentIndexMap.end())
+		{
+			DebugAssert(false, "Component not found on entity.");
+			return false;
+		}
+
+		const size_t componentIndex = it->second;
+		const size_t lastIndex = myComponents[componentIdentityID].DestroyObject(componentIndex);
+
+		entityIDToComponentIndexMap.erase(entityID);
+
+		std::unordered_map<ComponentIndex, EntityID>& componentIndexToEntityID = myComponentIndexToEntityID[componentIdentityID];
+		const size_t lastComponentEntityIDOwner = componentIndexToEntityID[lastIndex];
+
+		lastComponentEntityIDOwner;
+
+		return true;
 	}
 }

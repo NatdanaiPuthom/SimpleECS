@@ -29,7 +29,7 @@ namespace Simple
 
 		const MemoryPool::OperationStatus CreateObject(const void* aDefaultValue = nullptr);
 
-		void DestroyObject(const size_t aIndex);
+		size_t DestroyObject(const size_t aIndex);
 
 		template<IsComponent T>
 		T* GetObjectAtIndex(const size_t aIndex) const;

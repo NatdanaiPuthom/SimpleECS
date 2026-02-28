@@ -25,27 +25,40 @@ namespace Simple
 		}
 	}
 
-	Entity& EntityComponentSystem::CreateEntity()
+	EntityID EntityComponentSystem::CreateEntity()
 	{
 		const ComponentsSignature signature;
+		const size_t id = myNextEntityID;
 
 		std::vector<Entity>& entities = mySignatureToEntities[signature];
-		Entity& newEntity = entities.emplace_back(myNextEntityID);
+		Entity& newEntity = entities.emplace_back(id);
 		myNextEntityID++;
 
-		/*
-		newEntity.SetEntityDataIndex(myEntityDatas.size() + 1);
-
 		EntityData entityData;
-		entityData.signature = signature;
-		entityData.indexInEntities = entities.size() - 1;
+		entityData.index = entities.size() - 1;
+		entityData.componentSignature = signature;
 
-		myEntityDatas.push_back(entityData);
-	
+		myEntityIDToEntityData[id] = entityData;
 
-		*/
+		return newEntity.GetID();
+	}
 
-		return newEntity;
+	Entity& EntityComponentSystem::GetEntity(const EntityID aEntityID)
+	{
+		auto it = myEntityIDToEntityData.find(aEntityID);
+
+		if (it == myEntityIDToEntityData.end())
+		{
+			DebugAssert(false, "Entity with this ID doesn't exist.");
+			static Entity dummy;
+			return dummy;
+		}
+
+		const EntityData& entityData = it->second;
+		std::span<Entity> entities = mySignatureToEntities[entityData.componentSignature];
+		Entity& entity = entities[entityData.index];
+
+		return entity;
 	}
 
 	void EntityComponentSystem::DestroyEntity(size_t aEntityIndex)

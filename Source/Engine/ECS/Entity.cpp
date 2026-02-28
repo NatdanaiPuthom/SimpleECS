@@ -1,9 +1,16 @@
 #include "Entity.hpp"
 #include "ECS/Constants/MaxEntities.hpp"
 #include <format>
+#include <limits>
 
 namespace Simple
 {
+	Entity::Entity()
+	{
+		myID = std::numeric_limits<size_t>().max();
+		myName = "Dummy Entity";
+	}
+
 	Entity::Entity(const size_t aID)
 		: myID(aID)
 		, myName(std::format("New Entity {}", aID))

@@ -211,9 +211,10 @@ namespace Simple
 		return status;
 	}
 
-	void MemoryPool::DestroyObject(const size_t aIndex)
+	size_t MemoryPool::DestroyObject(const size_t aIndex)
 	{
 		const size_t size = myComponentTypeIdentity.GetSize();
+		const size_t lastIndex = myCount;
 
 		Byte* componentToRemoveAddress = myStartMemoryAddress + size * aIndex;
 		Byte* lastComponentToSwap = myStartMemoryAddress + size * myCount;
@@ -222,5 +223,7 @@ namespace Simple
 
 		myCurrentMemoryAddress -= size;
 		myCount--;
+
+		return lastIndex;
 	}
 }

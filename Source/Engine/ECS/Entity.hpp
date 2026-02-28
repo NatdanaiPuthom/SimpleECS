@@ -12,6 +12,7 @@ namespace Simple
 	{
 		friend class EntityComponentSystem;
 	public:
+		Entity();
 		Entity(const size_t aID);
 		Entity(const size_t aID, const char* aName);
 
