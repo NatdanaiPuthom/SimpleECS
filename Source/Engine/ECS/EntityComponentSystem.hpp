@@ -48,59 +48,6 @@ namespace Simple
 		size_t myNextEntityID;
 	};
 
-	/*template<IsComponent T>
-	inline bool EntityComponentSystem::AddComponent(const EntityID aEntityID)
-	{
-		auto it = myEntityIDToEntityData.find(aEntityID);
-
-		if (it == myEntityIDToEntityData.end())
-		{
-			DebugAssert(false, "Entity with this ID doesn't exist.");
-			return false;
-		}
-
-		EntityData& entityData = it->second;
-
-		const size_t entityIndex = entityData.index;
-		std::vector<Entity>& entities = mySignatureToEntities[entityData.componentSignature];
-
-		const bool componentAlreadyExist = entities[entityIndex].HasComponent<T>();
-
-		if (componentAlreadyExist == true)
-		{
-			DebugAssert(false, "Duplicate component type on entity is not allowed");
-			return false;
-		}
-
-		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
-		const MemoryPool::OperationStatus status = myComponents[componentIdentityID].CreateObject();
-
-		if (status.success == true)
-		{
-			const size_t entityID = entities[entityIndex].GetID();
-			const size_t componentIndex = status.createdObjectIndex;
-
-			entities[entityIndex].AddComponent(componentIdentityID);
-			entityData.componentSignature = entities[entityIndex].GetComponentsSignature();
-
-			myEntityIDToComponentIndex[componentIdentityID][entityID] = componentIndex;
-			myComponentIndexToEntityID[componentIdentityID][componentIndex] = entityID;
-
-			if (entityIndex != entities.size() - 1)
-			{
-				const EntityID lastEntityID = entities.back().GetID();
-				myEntityIDToEntityData[lastEntityID].index = entityIndex;
-
-				entities[entityIndex] = entities.back();
-				mySignatureToEntities[entityData.componentSignature].push_back(std::move(entities.back()));
-			}
-
-			entities.pop_back();
-		}
-
-		return status.success;
-	}*/
-
 	template<IsComponent T>
 	inline bool EntityComponentSystem::AddComponent(const EntityID aEntityID)
 	{
