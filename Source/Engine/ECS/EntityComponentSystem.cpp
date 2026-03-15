@@ -107,12 +107,58 @@ namespace Simple
 		return true;
 	}
 
-	bool EntityComponentSystem::RemoveComponentByID(const size_t aComponentTypeUniqueID, EntityData& aEntityData)
+	bool EntityComponentSystem::AddComponentByID(const size_t aComponentIdentityID, EntityData& aEntityData)
+	{
+		const size_t entityIndex = aEntityData.index;
+		std::vector<Entity>& entities = mySignatureToEntities[aEntityData.componentSignature];
+
+		const bool componentAlreadyExist = entities[entityIndex].HasComponentByID(aComponentIdentityID);
+
+		if (componentAlreadyExist == true)
+		{
+			DebugAssert(false, "Duplicate component type on entity is not allowed");
+			return false;
+		}
+
+		const MemoryPool::OperationStatus status = myComponents[aComponentIdentityID].CreateObject();
+
+		if (status.success == true)
+		{
+			const size_t entityID = entities[entityIndex].GetID();
+			const size_t componentIndex = status.createdObjectIndex;
+
+			entities[entityIndex].AddComponent(aComponentIdentityID);
+
+			const ComponentsSignature newSignature = entities[entityIndex].GetComponentsSignature();
+			myEntityIDToComponentIndex[aComponentIdentityID][entityID] = componentIndex;
+			myComponentIndexToEntityID[aComponentIdentityID][componentIndex] = entityID;
+
+			std::vector<Entity>& newEntities = mySignatureToEntities[newSignature];
+			newEntities.push_back(std::move(entities[entityIndex]));
+
+			aEntityData.componentSignature = newSignature;
+			aEntityData.index = newEntities.size() - 1;
+
+			if (entityIndex != entities.size() - 1)
+			{
+				entities[entityIndex] = std::move(entities.back());
+
+				const size_t movedEntityID = entities[entityIndex].GetID();
+				myEntityIDToEntityData.at(movedEntityID).index = entityIndex;
+			}
+
+			entities.pop_back();
+		}
+
+		return status.success;
+	}
+
+	bool EntityComponentSystem::RemoveComponentByID(const size_t aComponentIdentityID, EntityData& aEntityData)
 	{	
 		const size_t entityIndex = aEntityData.index;
 		std::vector<Entity>& entities = mySignatureToEntities[aEntityData.componentSignature];
 
-		const bool componentAlreadyExist = entities[entityIndex].HasComponent(aComponentTypeUniqueID);
+		const bool componentAlreadyExist = entities[entityIndex].HasComponentByID(aComponentIdentityID);
 
 		if (componentAlreadyExist == false)
 		{
@@ -120,11 +166,11 @@ namespace Simple
 			return false;
 		}
 
-		const ComponentIndex componentIndex = myEntityIDToComponentIndex[aComponentTypeUniqueID].at(aEntityData.id);
-		const ComponentIndex lastComponentIndex = myComponents[aComponentTypeUniqueID].GetCount() - 1;
-		const EntityID lastComponentEntityID = myComponentIndexToEntityID[aComponentTypeUniqueID].at(lastComponentIndex);
+		const ComponentIndex componentIndex = myEntityIDToComponentIndex[aComponentIdentityID].at(aEntityData.id);
+		const ComponentIndex lastComponentIndex = myComponents[aComponentIdentityID].GetCount() - 1;
+		const EntityID lastComponentEntityID = myComponentIndexToEntityID[aComponentIdentityID].at(lastComponentIndex);
 
-		const bool result = myComponents[aComponentTypeUniqueID].DestroyObject(componentIndex);
+		const bool result = myComponents[aComponentIdentityID].DestroyObject(componentIndex);
 
 		if (result == false)
 		{
@@ -132,20 +178,20 @@ namespace Simple
 			return false;
 		}
 
-		entities[entityIndex].RemoveComponent(aComponentTypeUniqueID);
+		entities[entityIndex].RemoveComponent(aComponentIdentityID);
 
 		if (componentIndex != lastComponentIndex)
 		{
-			myEntityIDToComponentIndex[aComponentTypeUniqueID].at(lastComponentIndex) = componentIndex;
-			myComponentIndexToEntityID[aComponentTypeUniqueID].at(componentIndex) = lastComponentEntityID;
-			myComponentIndexToEntityID[aComponentTypeUniqueID].erase(lastComponentIndex);
+			myEntityIDToComponentIndex[aComponentIdentityID].at(lastComponentIndex) = componentIndex;
+			myComponentIndexToEntityID[aComponentIdentityID].at(componentIndex) = lastComponentEntityID;
+			myComponentIndexToEntityID[aComponentIdentityID].erase(lastComponentIndex);
 		}
 		else
 		{
-			myComponentIndexToEntityID[aComponentTypeUniqueID].erase(componentIndex);
+			myComponentIndexToEntityID[aComponentIdentityID].erase(componentIndex);
 		}
 
-		myEntityIDToComponentIndex[aComponentTypeUniqueID].erase(aEntityData.id);
+		myEntityIDToComponentIndex[aComponentIdentityID].erase(aEntityData.id);
 
 		const ComponentsSignature newSignature = entities[entityIndex].GetComponentsSignature();
 		std::vector<Entity>& newEntities = mySignatureToEntities[newSignature];

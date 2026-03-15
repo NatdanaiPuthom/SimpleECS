@@ -33,12 +33,6 @@ int main()
 	[[maybe_unused]] Entity& refEntity4 = ecs.GetEntity(newEntity3);
 	[[maybe_unused]] Entity& refEntity5 = ecs.GetEntity(newEntity4);
 
-	ecs.myComponentIndexToEntityID;
-	ecs.myEntityIDToComponentIndex;
-	ecs.myEntityIDToEntityData;
-	ecs.mySignatureToEntities;
-	ecs.myComponents;
-
 	[[maybe_unused]] bool success0 = ecs.RemoveComponent<EmilTest>(newEntity0);
 	[[maybe_unused]] bool success1 = ecs.RemoveComponent<EmilTest>(newEntity1);
 

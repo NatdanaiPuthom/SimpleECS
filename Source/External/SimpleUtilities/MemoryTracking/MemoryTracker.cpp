@@ -184,7 +184,7 @@ namespace Simple
 		myStaticStackTraceToAllocationCount.clear();
 	}
 #else 
-	void SimpleMemoryTracker::Init() {};
+	void SimpleMemoryTracker::Initialize() {};
 	void SimpleMemoryTracker::Destory() {};
 #endif 
 }

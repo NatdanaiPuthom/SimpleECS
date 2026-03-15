@@ -33,7 +33,7 @@ namespace Simple
 		template<IsComponent T>
 		bool HasComponent();
 
-		bool HasComponent(const size_t aComponentIdentityID);
+		bool HasComponentByID(const size_t aComponentIdentityID);
 
 	private:
 		void AddComponent(const size_t aComponentIdentityID);

@@ -70,7 +70,7 @@ namespace Simple
 		return *this;
 	}
 
-	bool Entity::HasComponent(const size_t aComponentIdentityID)
+	bool Entity::HasComponentByID(const size_t aComponentIdentityID)
 	{
 		return myComponentsSignature.test(aComponentIdentityID);
 	}
