@@ -31,6 +31,7 @@ namespace Simple
 	Entity::Entity(const Entity& aOther) noexcept
 		: myID(aOther.myID)
 		, myName(aOther.myName)
+		, myComponentsSignature(aOther.myComponentsSignature)
 	{
 	}
 
@@ -40,6 +41,7 @@ namespace Simple
 		{
 			this->myID = aOther.myID;
 			this->myName = aOther.myName;
+			this->myComponentsSignature = aOther.myComponentsSignature;
 		}
 
 		return *this;
@@ -48,6 +50,7 @@ namespace Simple
 	Entity::Entity(Entity&& aOther) noexcept
 		: myID(aOther.myID)
 		, myName(std::move(aOther.myName))
+		, myComponentsSignature(std::move(aOther.myComponentsSignature))
 	{
 	}
 
@@ -57,8 +60,11 @@ namespace Simple
 		{
 			this->myID = aOther.myID;
 			this->myName = std::move(aOther.myName);
+			this->myComponentsSignature = std::move(aOther.myComponentsSignature);
 
 			aOther.myID = GLOBAL_MAX_ENTITIES;
+			aOther.myName = "Invalid Entity";
+			aOther.myComponentsSignature.reset();
 		}
 
 		return *this;

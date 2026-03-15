@@ -31,7 +31,9 @@ namespace Simple
 		const size_t id = myNextEntityID;
 
 		std::vector<Entity>& entities = mySignatureToEntities[signature];
-		Entity& newEntity = entities.emplace_back(id);
+		const Entity& newEntity = entities.emplace_back(id);
+		const EntityID newEntityID = newEntity.GetID();
+
 		myNextEntityID++;
 
 		EntityData entityData;
@@ -40,7 +42,7 @@ namespace Simple
 
 		myEntityIDToEntityData[id] = entityData;
 
-		return newEntity.GetID();
+		return newEntityID;
 	}
 
 	Entity& EntityComponentSystem::GetEntity(const EntityID aEntityID)

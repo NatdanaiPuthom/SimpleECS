@@ -21,9 +21,10 @@ int main()
 	[[maybe_unused]] EntityID newEntity2 = ecs.CreateEntity();
 
 	ecs.AddComponent<EmilTest>(newEntity1);
-	//ecs.AddComponent<EmilTest>(newEntity2);
+	ecs.AddComponent<EmilTest>(newEntity2);
 
-	[[maybe_unused]] Entity& refEntity = ecs.GetEntity(newEntity1);
+	[[maybe_unused]] Entity& refEntity1 = ecs.GetEntity(newEntity1);
+	[[maybe_unused]] Entity& refEntity2 = ecs.GetEntity(newEntity2);
 
 	ECSRegistry::GetInstance()->Destroy();
 
