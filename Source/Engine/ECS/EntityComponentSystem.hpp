@@ -36,8 +36,8 @@ namespace Simple
 		bool AddComponent(const EntityID aEntityID);
 
 		template<IsComponent T>
-		bool RemoveComponent(Entity& aEntity);
-	private:
+		bool RemoveComponent(const EntityID aEntityID);
+		//private:
 		std::unordered_map<ComponentsSignature, std::vector<Entity>> mySignatureToEntities;
 		std::unordered_map<EntityID, EntityData> myEntityIDToEntityData;
 
@@ -97,7 +97,7 @@ namespace Simple
 				entities[entityIndex] = std::move(entities.back());
 
 				const size_t movedEntityID = entities[entityIndex].GetID();
-				myEntityIDToEntityData[movedEntityID].index = entityIndex;
+				myEntityIDToEntityData.at(movedEntityID).index = entityIndex;
 			}
 
 			entities.pop_back();
@@ -107,30 +107,74 @@ namespace Simple
 	}
 
 	template<IsComponent T>
-	inline bool EntityComponentSystem::RemoveComponent(Entity& aEntity)
+	inline bool EntityComponentSystem::RemoveComponent(const EntityID aEntityID)
 	{
-		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
-		const size_t entityID = aEntity.GetID();
+		auto it = myEntityIDToEntityData.find(aEntityID);
 
-		std::unordered_map<EntityID, ComponentIndex>& entityIDToComponentIndexMap = myEntityIDToComponentIndex[componentIdentityID];
-
-		auto it = entityIDToComponentIndexMap.find(entityID);
-
-		if (it == entityIDToComponentIndexMap.end())
+		if (it == myEntityIDToEntityData.end())
 		{
-			DebugAssert(false, "Component not found on entity.");
+			DebugAssert(false, "Entity with this ID doesn't exist.");
 			return false;
 		}
 
-		const size_t componentIndex = it->second;
-		const size_t lastIndex = myComponents[componentIdentityID].DestroyObject(componentIndex);
+		EntityData& entityData = it->second;
 
-		entityIDToComponentIndexMap.erase(entityID);
+		const size_t entityIndex = entityData.index;
+		std::vector<Entity>& entities = mySignatureToEntities[entityData.componentSignature];
 
-		std::unordered_map<ComponentIndex, EntityID>& componentIndexToEntityID = myComponentIndexToEntityID[componentIdentityID];
-		const size_t lastComponentEntityIDOwner = componentIndexToEntityID[lastIndex];
+		const bool componentAlreadyExist = entities[entityIndex].HasComponent<T>();
 
-		lastComponentEntityIDOwner;
+		if (componentAlreadyExist == false)
+		{
+			DebugAssert(false, "No component to remove.");
+			return false;
+		}
+
+		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
+		const ComponentIndex componentIndex = myEntityIDToComponentIndex[componentIdentityID].at(aEntityID);
+		const ComponentIndex lastComponentIndex  = myComponents[componentIdentityID].GetCount() - 1;
+		const EntityID lastComponentEntityID = myComponentIndexToEntityID[componentIdentityID].at(lastComponentIndex);
+
+		const bool success = myComponents[componentIdentityID].DestroyObject(componentIndex);
+
+		if (success == false)
+		{
+			DebugAssert(false, "Failed to remove component.");
+			return false;
+		}
+
+		entities[entityIndex].RemoveComponent(componentIdentityID);
+
+		if (componentIndex != lastComponentIndex)
+		{
+			myEntityIDToComponentIndex[componentIdentityID].at(lastComponentIndex) = componentIndex;
+			myComponentIndexToEntityID[componentIdentityID].at(componentIndex) = lastComponentEntityID;
+			myComponentIndexToEntityID[componentIdentityID].erase(lastComponentIndex);
+		}
+		else
+		{
+			myComponentIndexToEntityID[componentIdentityID].erase(componentIndex);
+		}
+
+		myEntityIDToComponentIndex[componentIdentityID].erase(aEntityID);
+
+		const ComponentsSignature newSignature = entities[entityIndex].GetComponentsSignature();
+		std::vector<Entity>& newEntities = mySignatureToEntities[newSignature];
+
+		newEntities.push_back(std::move(entities[entityIndex]));
+
+		entityData.componentSignature = newSignature;
+		entityData.index = newEntities.size() - 1;
+
+		if (entityIndex != entities.size() - 1)
+		{
+			entities[entityIndex] = std::move(entities.back());
+
+			const EntityID movedEntityID = entities[entityIndex].GetID();
+			myEntityIDToEntityData[movedEntityID].index = entityIndex;
+		}
+
+		entities.pop_back();
 
 		return true;
 	}

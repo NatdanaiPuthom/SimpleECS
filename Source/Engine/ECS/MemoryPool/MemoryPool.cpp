@@ -105,6 +105,11 @@ namespace Simple
 		return myEndMemoryAddress - myStartMemoryAddress;
 	}
 
+	size_t MemoryPool::GetCount() const
+	{
+		return myCount;
+	}
+
 	void MemoryPool::PrintMemoryStatus() const
 	{
 		std::cout << "--------------------" << std::endl;
@@ -211,10 +216,14 @@ namespace Simple
 		return status;
 	}
 
-	size_t MemoryPool::DestroyObject(const size_t aIndex)
+	bool MemoryPool::DestroyObject(const size_t aIndex)
 	{
+		if (aIndex > myCount)
+		{
+			return false;
+		}
+
 		const size_t size = myComponentTypeIdentity.GetSize();
-		const size_t lastIndex = myCount;
 
 		Byte* componentToRemoveAddress = myStartMemoryAddress + size * aIndex;
 		Byte* lastComponentToSwap = myStartMemoryAddress + size * myCount;
@@ -224,6 +233,6 @@ namespace Simple
 		myCurrentMemoryAddress -= size;
 		myCount--;
 
-		return lastIndex;
+		return true;
 	}
 }
