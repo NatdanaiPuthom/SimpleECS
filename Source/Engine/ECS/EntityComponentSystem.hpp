@@ -2,6 +2,7 @@
 #include "ECS/MemoryPool/MemoryPool.hpp"
 #include "ECS/Constants/MaxComponents.hpp"
 #include "ECS/Constants/ComponentsSignature.hpp"
+#include "ECS/Constants/InvalidIndex.hpp"
 #include "ECS/Entity.hpp"
 #include <vector>
 #include <unordered_map>
@@ -18,7 +19,8 @@ namespace Simple
 
 		struct EntityData
 		{
-			size_t index;
+			EntityID id = GLOBAL_INVALID_INDEX_SIZE_T;
+			size_t index = GLOBAL_INVALID_INDEX_SIZE_T;
 			ComponentsSignature componentSignature;
 		};
 	public:
@@ -30,14 +32,18 @@ namespace Simple
 		EntityID CreateEntity();
 		Entity& GetEntity(const EntityID aEntityID);
 
-		void DestroyEntity(size_t aEntityIndex);
+		bool DestroyEntity(const EntityID aEntityID);
 
 		template<IsComponent T>
 		bool AddComponent(const EntityID aEntityID);
 
 		template<IsComponent T>
 		bool RemoveComponent(const EntityID aEntityID);
+
+	private:
+		bool RemoveComponentByID(const size_t aComponentTypeUniqueID, EntityData& aEntityData);
 		//private:
+	public: //test debug
 		std::unordered_map<ComponentsSignature, std::vector<Entity>> mySignatureToEntities;
 		std::unordered_map<EntityID, EntityData> myEntityIDToEntityData;
 
@@ -117,65 +123,8 @@ namespace Simple
 			return false;
 		}
 
-		EntityData& entityData = it->second;
+		const bool result = RemoveComponentByID(ComponentIdentityID<T>().GetID(), it->second);
 
-		const size_t entityIndex = entityData.index;
-		std::vector<Entity>& entities = mySignatureToEntities[entityData.componentSignature];
-
-		const bool componentAlreadyExist = entities[entityIndex].HasComponent<T>();
-
-		if (componentAlreadyExist == false)
-		{
-			DebugAssert(false, "No component to remove.");
-			return false;
-		}
-
-		const size_t componentIdentityID = ComponentIdentityID<T>().GetID();
-		const ComponentIndex componentIndex = myEntityIDToComponentIndex[componentIdentityID].at(aEntityID);
-		const ComponentIndex lastComponentIndex  = myComponents[componentIdentityID].GetCount() - 1;
-		const EntityID lastComponentEntityID = myComponentIndexToEntityID[componentIdentityID].at(lastComponentIndex);
-
-		const bool success = myComponents[componentIdentityID].DestroyObject(componentIndex);
-
-		if (success == false)
-		{
-			DebugAssert(false, "Failed to remove component.");
-			return false;
-		}
-
-		entities[entityIndex].RemoveComponent(componentIdentityID);
-
-		if (componentIndex != lastComponentIndex)
-		{
-			myEntityIDToComponentIndex[componentIdentityID].at(lastComponentIndex) = componentIndex;
-			myComponentIndexToEntityID[componentIdentityID].at(componentIndex) = lastComponentEntityID;
-			myComponentIndexToEntityID[componentIdentityID].erase(lastComponentIndex);
-		}
-		else
-		{
-			myComponentIndexToEntityID[componentIdentityID].erase(componentIndex);
-		}
-
-		myEntityIDToComponentIndex[componentIdentityID].erase(aEntityID);
-
-		const ComponentsSignature newSignature = entities[entityIndex].GetComponentsSignature();
-		std::vector<Entity>& newEntities = mySignatureToEntities[newSignature];
-
-		newEntities.push_back(std::move(entities[entityIndex]));
-
-		entityData.componentSignature = newSignature;
-		entityData.index = newEntities.size() - 1;
-
-		if (entityIndex != entities.size() - 1)
-		{
-			entities[entityIndex] = std::move(entities.back());
-
-			const EntityID movedEntityID = entities[entityIndex].GetID();
-			myEntityIDToEntityData[movedEntityID].index = entityIndex;
-		}
-
-		entities.pop_back();
-
-		return true;
+		return result;
 	}
 }

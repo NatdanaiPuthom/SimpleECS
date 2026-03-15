@@ -37,6 +37,7 @@ namespace Simple
 		myNextEntityID++;
 
 		EntityData entityData;
+		entityData.id = id;
 		entityData.index = entities.size() - 1;
 		entityData.componentSignature = signature;
 
@@ -63,29 +64,107 @@ namespace Simple
 		return entity;
 	}
 
-	void EntityComponentSystem::DestroyEntity(size_t aEntityIndex)
+	bool EntityComponentSystem::DestroyEntity(const EntityID aEntityID)
 	{
-		aEntityIndex;
-		//const EntityData& entityData = myEntityDatas[aEntityIndex];
-		//const ComponentSignature signature = entityData.signature;
+		auto it = myEntityIDToEntityData.find(aEntityID);
 
-		//std::vector<Entity>& entities = mySignatureToEntities[signature];
+		if (it == myEntityIDToEntityData.end())
+		{
+			DebugAssert(false, "Entity with this ID doesn't exist.");
+			return false;
+		}
 
-		//entities[entityData.indexInEntities] = std::move(entities.back());
-		//entities[entityData.indexInEntities].SetEntityDataIndex(aEntityIndex);
-		//entities.pop_back();
+		EntityData& entityData = it->second;
 
-		////myEntityDatas[aEntityIndex].signature = myEntitySignatures.back();
-		////myEntitySignatures.pop_back();
+		for (size_t i = 0; i < entityData.componentSignature.size(); i++)
+		{
+			if (entityData.componentSignature.test(i) == true)
+			{
+				const bool result = RemoveComponentByID(i, entityData);
 
-		//for (size_t i = 0; i < signature.size(); i++)
-		//{
-		//	if (signature.test(i) == true)
-		//	{
-		//		const size_t entityToComponentIndex = entities[aEntityIndex].GetEntityToComponentIndex();
-		//		const size_t componentIndex = myEntityToComponentDatas[entityToComponentIndex].componentIndex;
-		//		myComponents[i].DestroyObject(componentIndex);
-		//	}
-		//}
+				if (result == false)
+				{
+					DebugAssert(false, "Failed to remove component during entity destruction.");
+					return false;
+				}
+			}
+		}
+
+		const size_t entityIndex = entityData.index;
+		std::vector<Entity>& entities = mySignatureToEntities[entityData.componentSignature];
+
+		if (entityIndex != entities.size() - 1)
+		{
+			entities[entityIndex] = std::move(entities.back());
+
+			const EntityID movedEntityID = entities[entityIndex].GetID();
+			myEntityIDToEntityData[movedEntityID].index = entityIndex;
+		}
+
+		entities.pop_back();
+		myEntityIDToEntityData.erase(aEntityID);
+
+		return true;
+	}
+
+	bool EntityComponentSystem::RemoveComponentByID(const size_t aComponentTypeUniqueID, EntityData& aEntityData)
+	{	
+		const size_t entityIndex = aEntityData.index;
+		std::vector<Entity>& entities = mySignatureToEntities[aEntityData.componentSignature];
+
+		const bool componentAlreadyExist = entities[entityIndex].HasComponent(aComponentTypeUniqueID);
+
+		if (componentAlreadyExist == false)
+		{
+			DebugAssert(false, "No component to remove.");
+			return false;
+		}
+
+		const ComponentIndex componentIndex = myEntityIDToComponentIndex[aComponentTypeUniqueID].at(aEntityData.id);
+		const ComponentIndex lastComponentIndex = myComponents[aComponentTypeUniqueID].GetCount() - 1;
+		const EntityID lastComponentEntityID = myComponentIndexToEntityID[aComponentTypeUniqueID].at(lastComponentIndex);
+
+		const bool result = myComponents[aComponentTypeUniqueID].DestroyObject(componentIndex);
+
+		if (result == false)
+		{
+			DebugAssert(false, "Failed to remove component.");
+			return false;
+		}
+
+		entities[entityIndex].RemoveComponent(aComponentTypeUniqueID);
+
+		if (componentIndex != lastComponentIndex)
+		{
+			myEntityIDToComponentIndex[aComponentTypeUniqueID].at(lastComponentIndex) = componentIndex;
+			myComponentIndexToEntityID[aComponentTypeUniqueID].at(componentIndex) = lastComponentEntityID;
+			myComponentIndexToEntityID[aComponentTypeUniqueID].erase(lastComponentIndex);
+		}
+		else
+		{
+			myComponentIndexToEntityID[aComponentTypeUniqueID].erase(componentIndex);
+		}
+
+		myEntityIDToComponentIndex[aComponentTypeUniqueID].erase(aEntityData.id);
+
+		const ComponentsSignature newSignature = entities[entityIndex].GetComponentsSignature();
+		std::vector<Entity>& newEntities = mySignatureToEntities[newSignature];
+
+		newEntities.push_back(std::move(entities[entityIndex]));
+
+		aEntityData.componentSignature = newSignature;
+		aEntityData.index = newEntities.size() - 1;
+
+		if (entityIndex != entities.size() - 1)
+		{
+			entities[entityIndex] = std::move(entities.back());
+
+			const EntityID movedEntityID = entities[entityIndex].GetID();
+			myEntityIDToEntityData[movedEntityID].index = entityIndex;
+		}
+
+		entities.pop_back();
+
+		return true;
 	}
 }

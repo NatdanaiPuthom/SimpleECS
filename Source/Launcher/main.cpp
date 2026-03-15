@@ -9,7 +9,6 @@
 
 using namespace Simple;
 
-
 int main()
 {
 	Console console;
@@ -28,9 +27,6 @@ int main()
 	ecs.AddComponent<EmilTest>(newEntity1);
 	ecs.AddComponent<EmilTest>(newEntity2);
 
-	ecs.AddComponent<EricoTest>(newEntity0);
-	ecs.AddComponent<MathiasTest>(newEntity0);
-
 	[[maybe_unused]] Entity& refEntity1 = ecs.GetEntity(newEntity0);
 	[[maybe_unused]] Entity& refEntity2 = ecs.GetEntity(newEntity1);
 	[[maybe_unused]] Entity& refEntity3 = ecs.GetEntity(newEntity2);
@@ -45,7 +41,9 @@ int main()
 
 	[[maybe_unused]] bool success0 = ecs.RemoveComponent<EmilTest>(newEntity0);
 	[[maybe_unused]] bool success1 = ecs.RemoveComponent<EmilTest>(newEntity1);
-	[[maybe_unused]] bool success2 = ecs.RemoveComponent<EmilTest>(newEntity2);
+
+	[[maybe_unused]] bool destroyEntity = ecs.DestroyEntity(newEntity2);
+
 
 	ECSRegistry::GetInstance()->Destroy();
 

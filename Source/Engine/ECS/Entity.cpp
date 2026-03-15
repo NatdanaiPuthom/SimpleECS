@@ -70,6 +70,11 @@ namespace Simple
 		return *this;
 	}
 
+	bool Entity::HasComponent(const size_t aComponentIdentityID)
+	{
+		return myComponentsSignature.test(aComponentIdentityID);
+	}
+
 	void Entity::AddComponent(const size_t aComponentIdentityID)
 	{
 		myComponentsSignature.set(aComponentIdentityID, true);
