@@ -28,6 +28,8 @@ namespace Simple
 
 		template<IsSystem T>
 		void AddSystem();
+
+		void AddSystem(const size_t aHashCode, std::unique_ptr<System> aSystem);
 	private:
 		SystemManager();
 		~SystemManager();

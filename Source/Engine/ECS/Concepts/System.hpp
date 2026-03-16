@@ -19,8 +19,6 @@ namespace Simple
 		virtual void EarlyUpdate(EntityComponentSystem* /*aEntityComponentSystem*/) {};
 		virtual void FixedUpdate(EntityComponentSystem* /*aEntityComponentSystem*/) {};
 		virtual void LateUpdate(EntityComponentSystem* /*aEntityComponentSystem*/) {};
-
-		virtual std::unique_ptr<System> Clone() const = 0;
 	};
 
 	template<typename T>

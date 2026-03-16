@@ -6,6 +6,7 @@
 #include "Engine/ECS/EntityComponentSystem.hpp"
 
 #include "Engine/ECS/Component/TestComponents.hpp" //Test
+#include "Engine/ECS/Systems/TestSystem.hpp" //Test
 
 using namespace Simple;
 
@@ -38,10 +39,17 @@ int main()
 
 	[[maybe_unused]] bool destroyEntity = ecs.DestroyEntity(newEntity2);
 
-	ecs.EarlyUpdate();
-	ecs.FixedUpdate();
-	ecs.Update();
-	ecs.LateUpdate();
+	size_t count = 0;
+
+	while (count < 1000)
+	{
+		ecs.EarlyUpdate();
+		ecs.FixedUpdate();
+		ecs.Update();
+		ecs.LateUpdate();
+
+		count++;
+	}
 
 	ECSRegistry::GetInstance()->Destroy();
 

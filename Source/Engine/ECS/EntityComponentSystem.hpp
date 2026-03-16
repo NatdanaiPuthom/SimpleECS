@@ -42,6 +42,8 @@ namespace Simple
 		void FixedUpdate();
 		void LateUpdate();
 
+		void AddClonedSystem(const size_t aSystemHashCode, std::unique_ptr<System> aSystem);
+
 		EntityID CreateEntity();
 		Entity& GetEntity(const EntityID aEntityID);
 

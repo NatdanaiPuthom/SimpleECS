@@ -71,11 +71,11 @@ namespace Simple
 
 	void EntityComponentSystem::Initialize()
 	{
-		const auto& allRegisteredComponents = ECSRegistry::GetInstance()->GetRegisteredComponents();
+		const auto& allRegisteredComponentIdentities = ECSRegistry::GetInstance()->GetRegisteredComponents();
 
-		for (const auto& [hash, comp] : allRegisteredComponents)
+		for (const auto& [hash, componentIdentity] : allRegisteredComponentIdentities)
 		{
-			myComponents.emplace_back(comp.identity);
+			myComponents.emplace_back(componentIdentity);
 		}
 
 		mySystemManager.Initialize(this);
@@ -99,6 +99,11 @@ namespace Simple
 	void EntityComponentSystem::LateUpdate()
 	{
 		mySystemManager.LateUpdate(this);
+	}
+
+	void EntityComponentSystem::AddClonedSystem(const size_t aSystemHashCode, std::unique_ptr<System> aSystem)
+	{
+		mySystemManager.AddSystem(aSystemHashCode, std::move(aSystem));
 	}
 
 	EntityID EntityComponentSystem::CreateEntity()

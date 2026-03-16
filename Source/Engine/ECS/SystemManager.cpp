@@ -1,4 +1,5 @@
 #include "SystemManager.hpp"
+#include "ECSRegistry.hpp"
 
 namespace Simple
 {
@@ -13,9 +14,12 @@ namespace Simple
 
 	SystemManager::SystemManager(const SystemManager& aOther)
 	{
+		mySystems.clear();
+
 		for (const auto& [key, system] : aOther.mySystems)
 		{
-			mySystems.emplace(key, system->Clone());
+			const SystemTypeIdentity& systemIdentity = ECSRegistry::GetInstance()->GetSystemTypeIdentity(key);
+			mySystems.emplace(key, systemIdentity.Clone());
 		}
 	}
 
@@ -27,7 +31,8 @@ namespace Simple
 
 			for (const auto& [key, system] : aOther.mySystems)
 			{
-				mySystems.emplace(key, system->Clone());
+				const SystemTypeIdentity& systemIdentity = ECSRegistry::GetInstance()->GetSystemTypeIdentity(key);
+				mySystems.emplace(key, systemIdentity.Clone());
 			}
 		}
 
@@ -43,6 +48,7 @@ namespace Simple
 	{
 		if (this != &aOther)
 		{
+			mySystems.clear();
 			mySystems = std::move(aOther.mySystems);
 		}
 
@@ -51,6 +57,11 @@ namespace Simple
 
 	void SystemManager::Initialize(EntityComponentSystem* aEntityComponentSystem)
 	{
+		for (const auto& [hashCode, system] : ECSRegistry::GetInstance()->GetRegisteredSystems())
+		{
+			AddSystem(hashCode, system.Clone());
+		}
+
 		for (const auto& [key, system] : mySystems)
 		{
 			system->Initialize(aEntityComponentSystem);
@@ -87,5 +98,10 @@ namespace Simple
 		{
 			system->LateUpdate(aEntityComponentSystem);
 		}
+	}
+
+	void SystemManager::AddSystem(const size_t aHashCode, std::unique_ptr<System> aSystem)
+	{
+		mySystems[aHashCode] = std::move(aSystem);
 	}
 }

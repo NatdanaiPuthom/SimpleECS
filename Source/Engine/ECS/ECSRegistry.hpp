@@ -1,45 +1,13 @@
 #pragma once
 #include "ECS/Concepts/Component.hpp"
+#include "ECS/Concepts/System.hpp"
 #include "ECS/Component/ComponentTypeIdentity.hpp"
+#include "ECS/Systems/SystemTypeIdentity.hpp"
 #include "ECS/MemoryPool/MemoryPool.hpp"
 #include <unordered_map>
 
 namespace Simple
 {
-	struct TypeErasureComponent final
-	{
-		ComponentTypeIdentity identity;
-		size_t sizeOf = 0;
-		size_t alignOf = 0;
-	};
-
-	struct ECSComponentHashCode final
-	{
-		const size_t value;
-
-		template<IsComponent T>
-		static ECSComponentHashCode CreateUniqueHashCode()
-		{
-			return ECSComponentHashCode(ComponentIdentityID<T>::GetID());
-		}
-
-		bool operator==(const ECSComponentHashCode& aOther) const noexcept
-		{
-			return this->value == aOther.value;
-		}
-
-	private:
-		explicit ECSComponentHashCode(const size_t aHashCode) : value(aHashCode) {}
-	};
-
-	struct RegisteredComponentsIdentityHash final
-	{
-		std::size_t operator()(const ECSComponentHashCode& aKey) const noexcept
-		{
-			return aKey.value;
-		}
-	};
-
 	class ECSRegistry final
 	{
 	public:
@@ -47,53 +15,53 @@ namespace Simple
 	public:
 		void Destroy();
 
-		const std::unordered_map<ECSComponentHashCode, TypeErasureComponent, RegisteredComponentsIdentityHash>& GetRegisteredComponents() const;
+		const std::unordered_map<size_t, const ComponentTypeIdentity>& GetRegisteredComponents() const;
+		const std::unordered_map<size_t, const SystemTypeIdentity>& GetRegisteredSystems() const;
+		const ComponentTypeIdentity& GetComponentTypeIdentity(const size_t aID) const;
+		const SystemTypeIdentity& GetSystemTypeIdentity(const size_t aID) const;
 
 		template<IsComponent T>
-		bool Register();
+		bool RegisterComponent();
 
-		template<IsComponent T>
-		const TypeErasureComponent& GetTypeErasureComponent() const;
+		template<IsSystem T>
+		bool RegisterSystem();
+
 	private:
 		ECSRegistry();
 	private:
 		inline static ECSRegistry* myPtr = nullptr;
-		std::unordered_map<ECSComponentHashCode, TypeErasureComponent, RegisteredComponentsIdentityHash> myRegisteredComponents;
+		std::unordered_map<size_t, const ComponentTypeIdentity> myRegisteredComponentIdentities;
+		std::unordered_map<size_t, const SystemTypeIdentity> myRegisteredSystemIdentities;
 	};
 
 	template<IsComponent T>
-	inline bool ECSRegistry::Register()
+	inline bool ECSRegistry::RegisterComponent()
 	{
-		TypeErasureComponent component;
-		component.identity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
-		component.sizeOf = sizeof(T);
-		component.alignOf = alignof(T);
+		ComponentTypeIdentity componentIdentity = ComponentTypeIdentity::GetComponentTypeIdentity<T>();
 
-		const ECSComponentHashCode hashCode = ECSComponentHashCode::CreateUniqueHashCode<T>();
-
-		const auto [it, success] = myRegisteredComponents.insert({ hashCode, component });
-		return success;
-	}
-
-	template<IsComponent T>
-	inline const TypeErasureComponent& ECSRegistry::GetTypeErasureComponent() const
-	{
-		const ECSComponentHashCode hashCode = ECSComponentHashCode::CreateUniqueHashCode<T>();
-
-		const auto& it = myRegisteredComponents.find(hashCode);
-
-		if (it != myRegisteredComponents.end())
+		if (myRegisteredComponentIdentities.contains(componentIdentity.GetID()))
 		{
-			return it->second;
+			DebugAssert(false, "Component already registered.");
+			return false;
 		}
 
-		struct Dummy : Component
-		{
-			bool valid = false;
-		};
+		const auto [it, result] = myRegisteredComponentIdentities.insert({ componentIdentity.GetID(), componentIdentity });
+		return result;
+	}
 
-		static const TypeErasureComponent invalid = {};
-		return invalid;
+	template<IsSystem T>
+	inline bool ECSRegistry::RegisterSystem()
+	{
+		SystemTypeIdentity systemTypeIdentity = SystemTypeIdentity::GetSystemTypeIdentity<T>();
+
+		if (myRegisteredSystemIdentities.contains(systemTypeIdentity.GetID()))
+		{
+			DebugAssert(false, "System already registered.");
+			return false;
+		}
+
+		const auto [it, result] = myRegisteredSystemIdentities.insert({ systemTypeIdentity.GetID() , systemTypeIdentity});
+		return result;
 	}
 
 	template<IsComponent T>
@@ -104,13 +72,27 @@ namespace Simple
 		{
 			[[maybe_unused]] static bool registered = []()
 				{
-					ECSRegistry::GetInstance()->Register<T>();
+					ECSRegistry::GetInstance()->RegisterComponent<T>();
+					return true;
+				}();
+		}
+	};
+
+	template<IsSystem T>
+	class ECSRegisterSystem final
+	{
+	public:
+		ECSRegisterSystem()
+		{
+			[[maybe_unused]] static bool registered = []()
+				{
+					ECSRegistry::GetInstance()->RegisterSystem<T>();
 					return true;
 				}();
 		}
 	};
 
 #define REGISTER_COMPONENT(aComponent) inline ECSRegisterComponent<aComponent> Global_Reflection_ECS_Registered_Component_##aComponent
+#define REGISTER_SYSTEM(aSystem) inline ECSRegisterSystem<aSystem> Global_Reflection_ECS_Registered_System_##aSystem
 
 }
-

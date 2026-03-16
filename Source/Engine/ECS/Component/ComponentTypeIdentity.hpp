@@ -80,8 +80,7 @@ namespace Simple
 	template<IsComponent T>
 	inline ComponentTypeIdentity ComponentTypeIdentity::GetComponentTypeIdentity()
 	{
-		static const char* name = typeid(T).name();
-
+		static const char* name = ComponentIdentityID<T>::GetName();
 		static const size_t id = ComponentIdentityID<T>::GetID();
 
 		static CreateComponentFunctionPtr createFunctionPointer = [](void* aDestinationAddress, const void* aDefaultValuePointer) -> size_t
