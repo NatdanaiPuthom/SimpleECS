@@ -15,6 +15,60 @@ namespace Simple
 		myNextEntityID = 0;
 	}
 
+	EntityComponentSystem::EntityComponentSystem(const EntityComponentSystem& aOther)
+		: mySystemManager(aOther.mySystemManager)
+		, mySignatureToEntities(aOther.mySignatureToEntities)
+		, myEntityIDToEntityData(aOther.myEntityIDToEntityData)
+		, myComponents(aOther.myComponents)
+		, myEntityIDToComponentIndex(aOther.myEntityIDToComponentIndex)
+		, myComponentIndexToEntityID(aOther.myComponentIndexToEntityID)
+		, myNextEntityID(aOther.myNextEntityID)
+	{
+	}
+
+	EntityComponentSystem& EntityComponentSystem::operator=(const EntityComponentSystem& aOther)
+	{
+		if (this != &aOther)
+		{
+			mySystemManager = aOther.mySystemManager;
+			mySignatureToEntities = aOther.mySignatureToEntities;
+			myEntityIDToEntityData = aOther.myEntityIDToEntityData;
+			myComponents = aOther.myComponents;
+			myEntityIDToComponentIndex = aOther.myEntityIDToComponentIndex;
+			myComponentIndexToEntityID = aOther.myComponentIndexToEntityID;
+			myNextEntityID = aOther.myNextEntityID;
+		}
+
+		return *this;
+	}
+
+	EntityComponentSystem::EntityComponentSystem(EntityComponentSystem&& aOther) noexcept
+		: mySystemManager(std::move(aOther.mySystemManager))
+		, mySignatureToEntities(std::move(aOther.mySignatureToEntities))
+		, myEntityIDToEntityData(std::move(aOther.myEntityIDToEntityData))
+		, myComponents(std::move(aOther.myComponents))
+		, myEntityIDToComponentIndex(std::move(aOther.myEntityIDToComponentIndex))
+		, myComponentIndexToEntityID(std::move(aOther.myComponentIndexToEntityID))
+		, myNextEntityID(aOther.myNextEntityID)
+	{
+	}
+
+	EntityComponentSystem& EntityComponentSystem::operator=(EntityComponentSystem&& aOther) noexcept
+	{
+		if (this != &aOther)
+		{
+			mySystemManager = std::move(aOther.mySystemManager);
+			mySignatureToEntities = std::move(aOther.mySignatureToEntities);
+			myEntityIDToEntityData = std::move(aOther.myEntityIDToEntityData);
+			myComponents = std::move(aOther.myComponents);
+			myEntityIDToComponentIndex = std::move(aOther.myEntityIDToComponentIndex);
+			myComponentIndexToEntityID = std::move(aOther.myComponentIndexToEntityID);
+			myNextEntityID = aOther.myNextEntityID;
+		}
+
+		return *this;
+	}
+
 	void EntityComponentSystem::Initialize()
 	{
 		const auto& allRegisteredComponents = ECSRegistry::GetInstance()->GetRegisteredComponents();
@@ -23,6 +77,28 @@ namespace Simple
 		{
 			myComponents.emplace_back(comp.identity);
 		}
+
+		mySystemManager.Initialize(this);
+	}
+
+	void EntityComponentSystem::Update()
+	{
+		mySystemManager.Update(this);
+	}
+
+	void EntityComponentSystem::EarlyUpdate()
+	{
+		mySystemManager.EarlyUpdate(this);
+	}
+
+	void EntityComponentSystem::FixedUpdate()
+	{
+		mySystemManager.FixedUpdate(this);
+	}
+
+	void EntityComponentSystem::LateUpdate()
+	{
+		mySystemManager.LateUpdate(this);
 	}
 
 	EntityID EntityComponentSystem::CreateEntity()

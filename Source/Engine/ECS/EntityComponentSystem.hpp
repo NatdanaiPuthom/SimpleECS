@@ -3,6 +3,7 @@
 #include "ECS/Constants/MaxComponents.hpp"
 #include "ECS/Constants/ComponentsSignature.hpp"
 #include "ECS/Constants/InvalidIndex.hpp"
+#include "ECS/SystemManager.hpp"
 #include "ECS/Entity.hpp"
 #include <vector>
 #include <unordered_map>
@@ -27,7 +28,19 @@ namespace Simple
 		EntityComponentSystem();
 		~EntityComponentSystem();
 
+		EntityComponentSystem(const EntityComponentSystem& aOther);
+		EntityComponentSystem& operator=(const EntityComponentSystem& aOther);
+
+		EntityComponentSystem(EntityComponentSystem&& aOther) noexcept;
+		EntityComponentSystem& operator=(EntityComponentSystem&& aOther) noexcept;
+
 		void Initialize();
+
+		void Update();
+
+		void EarlyUpdate();
+		void FixedUpdate();
+		void LateUpdate();
 
 		EntityID CreateEntity();
 		Entity& GetEntity(const EntityID aEntityID);
@@ -44,6 +57,8 @@ namespace Simple
 		bool AddComponentByID(const size_t aComponentIdentityID, EntityData& aEntityData);
 		bool RemoveComponentByID(const size_t aComponentIdentityID, EntityData& aEntityData);
 	private:
+		SystemManager mySystemManager;
+
 		std::unordered_map<ComponentsSignature, std::vector<Entity>> mySignatureToEntities;
 		std::unordered_map<EntityID, EntityData> myEntityIDToEntityData;
 

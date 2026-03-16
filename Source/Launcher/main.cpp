@@ -38,6 +38,11 @@ int main()
 
 	[[maybe_unused]] bool destroyEntity = ecs.DestroyEntity(newEntity2);
 
+	ecs.EarlyUpdate();
+	ecs.FixedUpdate();
+	ecs.Update();
+	ecs.LateUpdate();
+
 	ECSRegistry::GetInstance()->Destroy();
 
 	return 0;
