@@ -31,15 +31,14 @@ namespace Simple
 
 	class ComponentTypeIdentity final
 	{
-	public:
+	private:
 		using CreateComponentFunctionPtr = size_t(*)(void* aDestinationAddress, const void* aDefaultValuePointer);
-		using CopyComponentFunctionPtr = void(*)(void* aDestinationAddress,const void* aSourceAddress);
+		using CopyComponentFunctionPtr = void(*)(void* aDestinationAddress, const void* aSourceAddress);
 		using MoveComponentFunctionPtr = void(*)(void* aDestinationAddress, void* aSourceAddress);
 		using DestroyComponentFunctionPtr = void(*)(void* aComponentAddress);
 
+	public:
 		ComponentTypeIdentity();
-		ComponentTypeIdentity(const size_t aID, const size_t aAlignment, const size_t aSize, const char* aName, CreateComponentFunctionPtr aCreateFunctionPtr, CopyComponentFunctionPtr aCopyFunctionPtr, MoveComponentFunctionPtr aMoveFunctionPtr, DestroyComponentFunctionPtr aDestroyFunctionPtr);
-
 		~ComponentTypeIdentity();
 
 		bool operator==(const ComponentTypeIdentity& aOther) const;
@@ -66,6 +65,8 @@ namespace Simple
 		template<IsComponent T>
 		static ComponentTypeIdentity GetComponentTypeIdentity();
 
+	private:
+		ComponentTypeIdentity(const size_t aID, const size_t aAlignment, const size_t aSize, const char* aName, CreateComponentFunctionPtr aCreateFunctionPtr, CopyComponentFunctionPtr aCopyFunctionPtr, MoveComponentFunctionPtr aMoveFunctionPtr, DestroyComponentFunctionPtr aDestroyFunctionPtr);
 	private:
 		std::string myName;
 		size_t myID;
